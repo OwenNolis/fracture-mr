@@ -11,4 +11,4 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7bc0125267fb14445a858e84633a46b9, type: 3}
   m_Name: SampleLoader
-  m_EditorClassIdentifier: Assembly-CSharp::Samples.SampleLoader
+  m_EditorClassIdentifier: Unity.XR.Management.Samples::Samples.SampleLoader
