@@ -830,7 +830,7 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: CC_TOOLS
+    Android: CC_TOOLS;USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS
     EmbeddedLinux: CC_TOOLS
     GameCoreScarlett: CC_TOOLS
     GameCoreXboxOne: CC_TOOLS
@@ -841,10 +841,10 @@ PlayerSettings:
     PS5: CC_TOOLS
     QNX: CC_TOOLS
     ReservedCFE: CC_TOOLS
-    Standalone: CC_TOOLS
+    Standalone: CC_TOOLS;USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS
     VisionOS: CC_TOOLS
     WebGL: CC_TOOLS
-    Windows Store Apps: CC_TOOLS
+    Windows Store Apps: CC_TOOLS;USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS
     XboxOne: CC_TOOLS
     iPhone: CC_TOOLS
     tvOS: CC_TOOLS
