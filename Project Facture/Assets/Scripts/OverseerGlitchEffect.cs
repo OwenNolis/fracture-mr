@@ -88,8 +88,13 @@ namespace Unity.VRTemplate
         private static readonly int GlitchColorProperty = Shader.PropertyToID("_GlitchColor");
         private static readonly int TimeProperty = Shader.PropertyToID("_Time");
 
+        public static OverseerGlitchEffect Instance { get; private set; }
+        public Material GlitchMaterial => m_GlitchMaterial;
+
         private void Awake()
         {
+            Instance = this;
+
             if (m_OverseerSystem == null)
             {
                 m_OverseerSystem = FindFirstObjectByType<OverseerSystem>();
@@ -127,30 +132,14 @@ namespace Unity.VRTemplate
                     m_IsGlitching = false;
                 }
             }
+
+            // Update Material Properties for URP Feature
+            UpdateMaterialProperties();
         }
 
-        private void TriggerGlitchBurst()
+        private void UpdateMaterialProperties()
         {
-            m_IsGlitching = true;
-            m_GlitchTimer = Random.Range(0.1f, 0.5f) * m_CurrentIntensity;
-        }
-
-        /// <summary>
-        /// Manually trigger a glitch effect.
-        /// </summary>
-        public void TriggerGlitch(float duration = 0.3f)
-        {
-            m_IsGlitching = true;
-            m_GlitchTimer = duration;
-        }
-
-        private void OnRenderImage(RenderTexture source, RenderTexture destination)
-        {
-            if (m_GlitchMaterial == null || m_CurrentIntensity <= 0)
-            {
-                Graphics.Blit(source, destination);
-                return;
-            }
+            if (m_GlitchMaterial == null) return;
 
             // Calculate effect multiplier (higher during glitch bursts)
             float effectMultiplier = m_IsGlitching ? 
@@ -200,9 +189,38 @@ namespace Unity.VRTemplate
             }
 
             m_GlitchMaterial.SetFloat(TimeProperty, Time.time);
+        }
+
+        private void TriggerGlitchBurst()
+        {
+            m_IsGlitching = true;
+            m_GlitchTimer = Random.Range(0.1f, 0.5f) * m_CurrentIntensity;
+        }
+
+        /// <summary>
+        /// Manually trigger a glitch effect.
+        /// </summary>
+        public void TriggerGlitch(float duration = 0.3f)
+        {
+            m_IsGlitching = true;
+            m_GlitchTimer = duration;
+        }
+
+        // OnRenderImage is not supported in URP. We use OverseerGlitchFeature instead.
+        /*
+        private void OnRenderImage(RenderTexture source, RenderTexture destination)
+        {
+            if (m_GlitchMaterial == null || m_CurrentIntensity <= 0)
+            {
+                Graphics.Blit(source, destination);
+                return;
+            }
+
+            UpdateMaterialProperties();
 
             Graphics.Blit(source, destination, m_GlitchMaterial);
         }
+        */
 
         private void OnDestroy()
         {

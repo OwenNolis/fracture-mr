@@ -87,6 +87,15 @@ namespace Unity.VRTemplate
         [Tooltip("Color to tint the screen during intense moments.")]
         private Color m_GlitchColor = new Color(1f, 0f, 0f, 0.1f);
 
+        [Header("Fake Crash Event")]
+        [SerializeField]
+        [Tooltip("UI Object (Canvas/Panel) to show when the 'crash' happens.")]
+        private GameObject m_CrashUI;
+
+        [SerializeField]
+        [Tooltip("Windows error sound effect.")]
+        private AudioClip m_CrashSound;
+
         [Header("Debug")]
         [SerializeField]
         private bool m_DebugMode = false;
@@ -109,6 +118,9 @@ namespace Unity.VRTemplate
         // Coroutine references
         private Coroutine m_MainLoopCoroutine;
         private Coroutine m_ControlTakeoverCoroutine;
+
+        // Crash timing
+        private float m_TakeoverCompleteTime = -1f;
 
         // Control takeover
         private bool m_IsControllingPlayer = false;
@@ -195,6 +207,9 @@ namespace Unity.VRTemplate
             m_TakeoverProgress = 0f;
 
             m_MainLoopCoroutine = StartCoroutine(OverseerMainLoop());
+             
+            // Start heartbeat
+            StartCoroutine(HeartbeatRoutine());
 
             if (m_DebugMode)
             {
@@ -218,6 +233,12 @@ namespace Unity.VRTemplate
             if (m_ControlTakeoverCoroutine != null)
             {
                 StopCoroutine(m_ControlTakeoverCoroutine);
+            }
+
+            // Restore movement provider if it was disabled
+            if (m_MoveProvider != null)
+            {
+                m_MoveProvider.enabled = true;
             }
 
             RestoreAllObjects();
@@ -377,6 +398,23 @@ namespace Unity.VRTemplate
                     SetNextControlTakeoverTime();
                 }
 
+                // Check for completion (Fake Crash)
+                if (m_TakeoverProgress >= 1.0f)
+                {
+                    // Delay the crash by 30 seconds after takeover is complete
+                    if (m_TakeoverCompleteTime < 0)
+                    {
+                        m_TakeoverCompleteTime = Time.time;
+                        if (m_DebugMode) Debug.Log("Takeover Complete (100%). Waiting 30s for crash...");
+                    }
+
+                    if (Time.time >= m_TakeoverCompleteTime + 30f)
+                    {
+                        ExecuteFakeCrash();
+                        yield break; // Stop the loop
+                    }
+                }
+
                 // Apply progressive screen effects
                 ApplyScreenEffects();
 
@@ -395,26 +433,26 @@ namespace Unity.VRTemplate
 
         private void SetNextGlitchTime()
         {
-            // More frequent glitches as takeover progresses
-            float baseInterval = Mathf.Lerp(15f, 2f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
-            m_NextGlitchTime = m_ElapsedTime + baseInterval + randomVariation;
+            // More frequent glitches as takeover progresses, but AT LEAST 30s apart per request
+            float baseInterval = Mathf.Lerp(60f, 30f, m_TakeoverProgress);
+            float randomVariation = Random.Range(0f, 15f); // Always add positive variation
+            m_NextGlitchTime = m_ElapsedTime + Mathf.Max(30f, baseInterval + randomVariation);
         }
 
         private void SetNextDisplacementTime()
         {
-            // More frequent displacements as takeover progresses
-            float baseInterval = Mathf.Lerp(20f, 3f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
-            m_NextDisplacementTime = m_ElapsedTime + baseInterval + randomVariation;
+            // More frequent displacements as takeover progresses, but AT LEAST 30s apart
+            float baseInterval = Mathf.Lerp(60f, 30f, m_TakeoverProgress);
+            float randomVariation = Random.Range(0f, 15f);
+            m_NextDisplacementTime = m_ElapsedTime + Mathf.Max(30f, baseInterval + randomVariation);
         }
 
         private void SetNextDisappearTime()
         {
-            // Disappearances start after Phase 1
-            float baseInterval = Mathf.Lerp(45f, 8f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
-            m_NextDisappearTime = m_ElapsedTime + baseInterval + randomVariation;
+            // Disappearances start after Phase 1, min 30s delay
+            float baseInterval = Mathf.Lerp(90f, 45f, m_TakeoverProgress);
+            float randomVariation = Random.Range(0f, 15f);
+            m_NextDisappearTime = m_ElapsedTime + Mathf.Max(30f, baseInterval + randomVariation);
         }
 
         private void SetNextSoundTime()
@@ -482,7 +520,14 @@ namespace Unity.VRTemplate
                     Random.Range(-glitchIntensity, glitchIntensity),
                     Random.Range(-glitchIntensity, glitchIntensity)
                 );
-                obj.transform.position = originalPos + glitchOffset;
+                
+                Vector3 targetPos = originalPos + glitchOffset;
+                
+                // Clamp to max 1.0f meter from original position
+                if (Vector3.Distance(targetPos, originalPos) > 1.0f)
+                {
+                    targetPos = originalPos + (targetPos - originalPos).normalized * 1.0f;
+                }
 
                 // Random rotation glitch
                 Quaternion glitchRot = Quaternion.Euler(
@@ -490,7 +535,20 @@ namespace Unity.VRTemplate
                     Random.Range(-5f * m_TakeoverProgress, 5f * m_TakeoverProgress),
                     Random.Range(-5f * m_TakeoverProgress, 5f * m_TakeoverProgress)
                 );
-                obj.transform.rotation = originalRot * glitchRot;
+                Quaternion targetRot = originalRot * glitchRot;
+
+                // Apply using physics if possible to avoid phasing
+                Rigidbody rb = obj.GetComponent<Rigidbody>();
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.MovePosition(targetPos);
+                    rb.MoveRotation(targetRot);
+                }
+                else
+                {
+                    obj.transform.position = targetPos;
+                    obj.transform.rotation = targetRot;
+                }
 
                 // Scale flicker
                 float scaleFlicker = Random.Range(0.95f, 1.05f);
@@ -511,22 +569,48 @@ namespace Unity.VRTemplate
                 yield return new WaitForSeconds(glitchDuration / glitchSteps);
             }
 
-            // Return to original or slightly offset position (based on progress)
+            // Return to original or slightly offset position
             if (m_TakeoverProgress < PHASE_2_END)
             {
-                obj.transform.position = originalPos;
-                obj.transform.rotation = originalRot;
+                // Return to exact original
+                Rigidbody rb = obj.GetComponent<Rigidbody>();
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.MovePosition(originalPos);
+                    rb.MoveRotation(originalRot);
+                }
+                else
+                {
+                    obj.transform.position = originalPos;
+                    obj.transform.rotation = originalRot;
+                }
                 obj.transform.localScale = originalScale;
             }
             else
             {
-                // Leave slightly displaced after Phase 2
+                // Leave slightly displaced but CLAMPED
                 float permanentOffset = glitchIntensity * 0.3f;
-                obj.transform.position = originalPos + new Vector3(
+                Vector3 finalOffset = new Vector3(
                     Random.Range(-permanentOffset, permanentOffset),
                     0,
                     Random.Range(-permanentOffset, permanentOffset)
                 );
+                
+                Vector3 targetFinalPos = originalPos + finalOffset;
+                 if (Vector3.Distance(targetFinalPos, originalPos) > 1.0f)
+                {
+                    targetFinalPos = originalPos + (targetFinalPos - originalPos).normalized * 1.0f;
+                }
+
+                Rigidbody rb = obj.GetComponent<Rigidbody>();
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.MovePosition(targetFinalPos);
+                }
+                else
+                {
+                    obj.transform.position = targetFinalPos;
+                }
             }
         }
 
@@ -537,7 +621,37 @@ namespace Unity.VRTemplate
 
             if (availableObjects.Count == 0) return;
 
-            GameObject obj = availableObjects[Random.Range(0, availableObjects.Count)];
+            // "Don't Blink" Mechanic: Prioritize objects that are NOT visible
+            // We split the list into visible and invisible objects
+            List<GameObject> hiddenObjects = new List<GameObject>();
+            List<GameObject> visibleObjects = new List<GameObject>();
+
+            foreach (var obj in availableObjects)
+            {
+                if (!IsObjectVisible(obj))
+                    hiddenObjects.Add(obj);
+                else
+                    visibleObjects.Add(obj);
+            }
+
+            GameObject targetObj = null;
+
+            // 80% chance to pick a hidden object if any differ
+            if (hiddenObjects.Count > 0 && Random.value < 0.8f)
+            {
+                targetObj = hiddenObjects[Random.Range(0, hiddenObjects.Count)];
+            }
+            else if (visibleObjects.Count > 0)
+            {
+                targetObj = visibleObjects[Random.Range(0, visibleObjects.Count)];
+            }
+            else if (availableObjects.Count > 0) 
+            {
+                // Fallback for edge cases
+                targetObj = availableObjects[Random.Range(0, availableObjects.Count)];
+            }
+
+            if (targetObj == null) return;
 
             // Displacement amount increases with progress
             float displacementAmount = Mathf.Lerp(0.01f, 0.15f, m_TakeoverProgress);
@@ -548,50 +662,140 @@ namespace Unity.VRTemplate
                 displacementAmount *= 0.2f;
             }
 
-            Vector3 displacement = new Vector3(
-                Random.Range(-displacementAmount, displacementAmount),
-                0, // Keep Y stable for now
-                Random.Range(-displacementAmount, displacementAmount)
-            );
-
-            // Apply displacement smoothly or instantly based on phase
-            if (m_TakeoverProgress < PHASE_2_END)
-            {
-                // Smooth, subtle movement
-                StartCoroutine(SmoothDisplacement(obj, displacement, 2f));
-            }
-            else
-            {
-                // Instant, jarring displacement
-                obj.transform.position += displacement;
-
-                // Sometimes also rotate slightly
-                if (Random.value < 0.5f)
-                {
-                    obj.transform.Rotate(0, Random.Range(-15f, 15f), 0);
-                }
-            }
+            // Execute displacement logic
+            ExecuteDisplacement(targetObj, displacementAmount, m_TakeoverProgress >= PHASE_2_END);
+            
+            // Spatial Audio: sound comes from the object's original position (ghostly) or new position
+            PlayCreepySound(targetObj.transform);
 
             if (m_DebugMode)
             {
-                Debug.Log($"Displacement triggered: {obj.name} moved by {displacement.magnitude:F3}m");
+                Debug.Log($"Displacement triggered: {targetObj.name} (Hidden: {hiddenObjects.Contains(targetObj)})");
             }
         }
 
-        private IEnumerator SmoothDisplacement(GameObject obj, Vector3 displacement, float duration)
+        private bool IsObjectVisible(GameObject obj)
         {
-            if (obj == null) yield break;
+            if (m_PlayerCamera == null || obj == null) return false;
 
+            Vector3 viewportPos = m_PlayerCamera.WorldToViewportPoint(obj.transform.position);
+            
+            // Check if within viewport (taking a bit of margin to be safe)
+            bool inViewport = viewportPos.x >= -0.1f && viewportPos.x <= 1.1f &&
+                              viewportPos.y >= -0.1f && viewportPos.y <= 1.1f &&
+                              viewportPos.z > 0;
+
+            if (!inViewport) return false;
+
+            // Optional: Raycast check for occlusion could go here, but viewport is enough for "peripheral" logic
+            return true;
+        }
+
+        private void ExecuteDisplacement(GameObject obj, float amount, bool instant)
+        {
+             if (obj == null) return;
+             
+             Vector3 originalPos = m_OriginalPositions[obj];
+             Vector3 displacement = new Vector3(
+                Random.Range(-amount, amount),
+                0,
+                Random.Range(-amount, amount)
+            );
+            
+            Vector3 targetPos = obj.transform.position + displacement;
+
+            // Clamp to 1m from ORIGINAL position
+            if (Vector3.Distance(targetPos, originalPos) > 1.0f)
+            {
+                Vector3 dir = (targetPos - originalPos).normalized;
+                targetPos = originalPos + dir * 1.0f;
+            }
+            
+            // "The Watcher" Mechanic: Object rotates to face the player
+            Quaternion targetRot = obj.transform.rotation;
+            if (Random.value < 0.4f + (m_TakeoverProgress * 0.4f)) // Chance increases with progress
+            {
+                Vector3 directionToPlayer = m_PlayerCamera.transform.position - targetPos;
+                directionToPlayer.y = 0; // Keep upright
+                if (directionToPlayer != Vector3.zero)
+                {
+                    targetRot = Quaternion.LookRotation(directionToPlayer);
+                    // e.g. for chairs, might need 180 flip depending on model, assuming forward is front
+                }
+            }
+            else if (instant && Random.value < 0.5f)
+            {
+                 // Small random jitter instead of look at
+                 targetRot = obj.transform.rotation * Quaternion.Euler(0, Random.Range(-15f, 15f), 0);
+            }
+            
+            if (!instant)
+            {
+                 StartCoroutine(SmoothDisplacement(obj, targetPos, targetRot, 2f));
+            }
+            else
+            {
+                Rigidbody rb = obj.GetComponent<Rigidbody>();
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.MovePosition(targetPos);
+                    rb.MoveRotation(targetRot);
+                }
+                else
+                {
+                    obj.transform.position = targetPos;
+                    obj.transform.rotation = targetRot;
+                }
+            }
+        }
+
+        private IEnumerator SmoothDisplacement(GameObject obj, Vector3 targetPos, Quaternion targetRot, float duration)
+        {
             Vector3 startPos = obj.transform.position;
-            Vector3 endPos = startPos + displacement;
+            Quaternion startRot = obj.transform.rotation;
             float elapsed = 0f;
 
-            while (elapsed < duration && obj != null)
+            Rigidbody rb = obj.GetComponent<Rigidbody>();
+
+            while (elapsed < duration)
             {
-                elapsed += Time.deltaTime;
+                if (obj == null) yield break;
+
                 float t = elapsed / duration;
-                obj.transform.position = Vector3.Lerp(startPos, endPos, t);
+                // Cubic ease out
+                t = 1f - Mathf.Pow(1f - t, 3f);
+
+                Vector3 newPos = Vector3.Lerp(startPos, targetPos, t);
+                Quaternion newRot = Quaternion.Lerp(startRot, targetRot, t);
+
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.MovePosition(newPos);
+                    rb.MoveRotation(newRot);
+                }
+                else
+                {
+                    obj.transform.position = newPos;
+                    obj.transform.rotation = newRot;
+                }
+
+                elapsed += Time.deltaTime;
                 yield return null;
+            }
+
+            // Ensure final pose
+            if (obj != null)
+            {
+                if (rb != null && !rb.isKinematic)
+                {
+                    rb.MovePosition(targetPos);
+                    rb.MoveRotation(targetRot);
+                }
+                else
+                {
+                    obj.transform.position = targetPos;
+                    obj.transform.rotation = targetRot;
+                }
             }
         }
 
@@ -670,23 +874,66 @@ namespace Unity.VRTemplate
             }
         }
 
-        private void PlayCreepySound()
+        private void PlayCreepySound(Transform source = null)
         {
-            if (m_AudioSource == null || m_CreepySounds == null || m_CreepySounds.Length == 0) return;
+            if (m_CreepySounds == null || m_CreepySounds.Length == 0) return;
 
             AudioClip clip = m_CreepySounds[Random.Range(0, m_CreepySounds.Length)];
-
-            // Volume increases with progress
-            float volume = Mathf.Lerp(0.1f, 0.6f, m_TakeoverProgress);
-
-            m_AudioSource.PlayOneShot(clip, volume);
-
-            if (m_DebugMode)
+            
+            // Spatial Audio Hallucination: Play from specific object source if provided
+            if (source != null)
             {
-                Debug.Log($"Playing creepy sound: {clip.name} at volume {volume:F2}");
+                 AudioSource.PlayClipAtPoint(clip, source.position, 1.0f);
+            }
+            else if (m_AudioSource != null)
+            {
+                 // Fallback to 2D / Head
+                m_AudioSource.PlayOneShot(clip);
             }
         }
 
+        private IEnumerator HeartbeatRoutine()
+        {
+            // Haptic Heartbeat: Simulate stress by vibrating controllers
+            while (m_IsActive)
+            {
+                // Heart beat rate increases with progress (60bpm to 140bpm)
+                float bpm = Mathf.Lerp(60f, 140f, m_TakeoverProgress);
+                float beatInterval = 60f / bpm;
+
+                // Only start feeling it after phase 1
+                if (m_TakeoverProgress > PHASE_1_END)
+                {
+                    float intensity = Mathf.Lerp(0f, 0.5f, m_TakeoverProgress);
+                    
+                    // Lub
+                    HapticPulse(intensity * 0.7f, 0.05f);
+                    yield return new WaitForSeconds(0.1f);
+                    
+                    // Dub
+                    HapticPulse(intensity, 0.05f);
+                }
+
+                yield return new WaitForSeconds(beatInterval - 0.1f);
+            }
+        }
+
+        private void HapticPulse(float amplitude, float duration)
+        {
+            if (m_LeftController != null)
+            {
+                var inputDevice = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.LeftHand);
+                inputDevice.SendHapticImpulse(0, amplitude, duration);
+            }
+            if (m_RightController != null)
+            {
+                var inputDevice = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightHand);
+                inputDevice.SendHapticImpulse(0, amplitude, duration);
+            }
+        }
+
+
+        
         private void ApplyScreenEffects()
         {
             // Screen effects intensity based on progress
@@ -764,10 +1011,22 @@ namespace Unity.VRTemplate
                 Debug.Log($"Control takeover started! Duration: {duration:F1}s, Intensity: {m_ControlIntensity:F2}");
             }
 
+            // Lock movement
+            if (m_MoveProvider != null)
+            {
+                m_MoveProvider.enabled = false;
+            }
+
             yield return new WaitForSeconds(duration);
 
             m_IsControllingPlayer = false;
             m_ControlIntensity = 0f;
+
+            // Unlock movement
+            if (m_MoveProvider != null)
+            {
+                m_MoveProvider.enabled = true;
+            }
 
             if (m_DebugMode)
             {
@@ -780,12 +1039,15 @@ namespace Unity.VRTemplate
             if (m_XROrigin == null) return;
 
             // Apply forced movement
-            Vector3 movement = m_ForcedMovementDirection * m_ControlIntensity * Time.deltaTime * 0.5f;
-            m_XROrigin.position += movement;
+            // REMOVED: Player wandering is disabled per request.
+            // Only rotation is allowed? User update: "dont move the charachter around" -> Disable rotation too.
+            // Vector3 movement = m_ForcedMovementDirection * m_ControlIntensity * Time.deltaTime * 0.5f;
+            // m_XROrigin.position += movement;
 
             // Apply forced rotation
-            float rotation = m_ForcedRotation * m_ControlIntensity * Time.deltaTime;
-            m_XROrigin.Rotate(0, rotation, 0);
+            // REMOVED: User requested no movement implies no rotation either.
+            // float rotation = m_ForcedRotation * m_ControlIntensity * Time.deltaTime;
+            // m_XROrigin.Rotate(0, rotation, 0);
 
             // In full takeover phase, also mess with hand positions occasionally
             if (m_TakeoverProgress >= PHASE_3_END)
@@ -794,26 +1056,68 @@ namespace Unity.VRTemplate
             }
         }
 
+        // Tracks active hand glitch coroutines to prevent recursion/drift
+        private Coroutine m_LeftHandGlitchCoroutine;
+        private Coroutine m_RightHandGlitchCoroutine;
+
         private void ApplyHandGlitch()
         {
             // Random chance to offset controller visuals
             if (Random.value < 0.02f * m_TakeoverProgress)
             {
-                if (m_LeftController != null)
+                if (m_LeftController != null && m_LeftHandGlitchCoroutine == null)
                 {
-                    StartCoroutine(TemporaryHandOffset(m_LeftController));
+                    m_LeftHandGlitchCoroutine = StartCoroutine(TemporaryHandOffset(m_LeftController, true));
                 }
-                if (m_RightController != null && Random.value < 0.5f)
+                if (m_RightController != null && m_RightHandGlitchCoroutine == null && Random.value < 0.5f)
                 {
-                    StartCoroutine(TemporaryHandOffset(m_RightController));
+                    m_RightHandGlitchCoroutine = StartCoroutine(TemporaryHandOffset(m_RightController, false));
                 }
             }
         }
 
-        private IEnumerator TemporaryHandOffset(Transform hand)
+        private void ExecuteFakeCrash()
+        {
+            if (m_DebugMode)
+            {
+                Debug.Log("CRITICAL ERROR: AI TAKEOVER COMPLETE. EXECUTING FAKE CRASH.");
+            }
+
+            // Play Windows Error Sound
+            if (m_AudioSource != null && m_CrashSound != null)
+            {
+                m_AudioSource.PlayOneShot(m_CrashSound, 1.0f);
+            }
+            else if (m_CrashSound != null && m_PlayerCamera != null)
+            {
+                // Fallback: create temporary audio source if needed, or just warn
+                AudioSource.PlayClipAtPoint(m_CrashSound, m_PlayerCamera.transform.position, 1.0f);
+            }
+
+            // Show Blue Screen / Crash UI
+            if (m_CrashUI != null)
+            {
+                m_CrashUI.SetActive(true);
+            }
+
+            // Pause the game time to simulate freeze
+            Time.timeScale = 0f;
+
+            // Stop all further logic
+            m_IsActive = false;
+        }
+
+        private IEnumerator TemporaryHandOffset(Transform hand, bool isLeft)
         {
             Vector3 originalLocalPos = hand.localPosition;
             Quaternion originalLocalRot = hand.localRotation;
+
+            // Validate transform data to prevent AABB errors
+            if (float.IsNaN(originalLocalPos.x) || float.IsInfinity(originalLocalPos.x)) 
+            {
+                if (isLeft) m_LeftHandGlitchCoroutine = null; else m_RightHandGlitchCoroutine = null;
+                yield break;
+            }
 
             float duration = Random.Range(0.1f, 0.3f);
             float elapsed = 0f;
@@ -827,15 +1131,21 @@ namespace Unity.VRTemplate
             while (elapsed < duration)
             {
                 float t = elapsed / duration;
-                hand.localPosition = Vector3.Lerp(originalLocalPos, originalLocalPos + offset,
-                    Mathf.Sin(t * Mathf.PI));
+                
+                // Use a safe lerp
+                hand.localPosition = Vector3.Lerp(originalLocalPos, originalLocalPos + offset, Mathf.Sin(t * Mathf.PI));
 
                 elapsed += Time.deltaTime;
                 yield return null;
             }
 
+            // Restore
             hand.localPosition = originalLocalPos;
             hand.localRotation = originalLocalRot;
+
+            // Clear the flag
+            if (isLeft) m_LeftHandGlitchCoroutine = null;
+            else m_RightHandGlitchCoroutine = null;
         }
 
         #endregion
