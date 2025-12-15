@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Movement;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
@@ -40,6 +40,10 @@ namespace Unity.VRTemplate
         [Tooltip("Tag to use when auto-finding affected objects.")]
         private string m_AffectedObjectTag = "AffectedByOverseer";
 
+        [SerializeField]
+        [Tooltip("If true, Poltergeist events will physically throw objects. If false, they will just rattle in place.")]
+        private bool m_AllowPoltergeistThrow = false;
+
         [Header("VR Control References")]
         [SerializeField]
         [Tooltip("Reference to the XR Origin/Rig.")]
@@ -64,6 +68,10 @@ namespace Unity.VRTemplate
         [SerializeField]
         [Tooltip("Reference to turn provider for rotation takeover.")]
         private ContinuousTurnProvider m_TurnProvider;
+
+        [SerializeField]
+        [Tooltip("Reference to Teleportation provider (if used).")]
+        private UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider m_TeleportProvider;
 
         [Header("Glitch Effects")]
         [SerializeField]
@@ -96,6 +104,10 @@ namespace Unity.VRTemplate
         [Tooltip("Windows error sound effect.")]
         private AudioClip m_CrashSound;
 
+        [SerializeField]
+        [Tooltip("Time in seconds to wait AFTER reaching 100% before crashing.")]
+        private float m_CrashDelay = 60f;
+
         [Header("Debug")]
         [SerializeField]
         private bool m_DebugMode = false;
@@ -107,6 +119,12 @@ namespace Unity.VRTemplate
         private bool m_IsActive = false;
         private float m_ElapsedTime = 0f;
         private float m_TakeoverProgress = 0f; // 0 to 1
+
+        // Heartbeat
+        private float m_LastHeartbeatTime = 0f;
+        [SerializeField]
+        [Tooltip("Heartbeat sound clip (optional).")]
+        private AudioClip m_HeartbeatSound;
 
         // Object tracking
         private Dictionary<GameObject, Vector3> m_OriginalPositions = new Dictionary<GameObject, Vector3>();
@@ -134,6 +152,7 @@ namespace Unity.VRTemplate
         private float m_NextDisappearTime = 0f;
         private float m_NextSoundTime = 0f;
         private float m_NextControlTakeoverTime = 0f;
+        private float m_NextPoltergeistTime = 0f;
 
         // Phase thresholds (0-1 range)
         private const float PHASE_1_END = 0.3f;      // 0-30% - Very subtle
@@ -294,6 +313,12 @@ namespace Unity.VRTemplate
                     m_AffectedObjects.Add(obj);
                 }
             }
+            
+            Debug.Log($"[OverseerSystem] Found {m_AffectedObjects.Count} affected objects. Tag: {m_AffectedObjectTag}");
+            if (m_AffectedObjects.Count == 0)
+            {
+                Debug.LogWarning("[OverseerSystem] Warning: No affected objects found! Glitches and poltergeist effects will not work. Tag objects with '" + m_AffectedObjectTag + "' or assign them manually.");
+            }
         }
 
         private void FindVRComponents()
@@ -324,6 +349,12 @@ namespace Unity.VRTemplate
             if (m_TurnProvider == null)
             {
                 m_TurnProvider = FindFirstObjectByType<ContinuousTurnProvider>();
+            }
+
+            // Try to find teleport provider
+            if (m_TeleportProvider == null)
+            {
+                m_TeleportProvider = FindFirstObjectByType<UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider>();
             }
         }
 
@@ -398,17 +429,24 @@ namespace Unity.VRTemplate
                     SetNextControlTakeoverTime();
                 }
 
+                // Check for Poltergeist (throwing objects) - Phase 2+
+                if (m_TakeoverProgress >= PHASE_2_END && currentTime >= m_NextPoltergeistTime)
+                {
+                    TriggerPoltergeist();
+                    SetNextPoltergeistTime();
+                }
+
                 // Check for completion (Fake Crash)
                 if (m_TakeoverProgress >= 1.0f)
                 {
-                    // Delay the crash by 30 seconds after takeover is complete
+                    // Delay the crash by m_CrashDelay seconds after takeover is complete
                     if (m_TakeoverCompleteTime < 0)
                     {
                         m_TakeoverCompleteTime = Time.time;
-                        if (m_DebugMode) Debug.Log("Takeover Complete (100%). Waiting 30s for crash...");
+                        if (m_DebugMode) Debug.Log($"Takeover Complete (100%). Waiting {m_CrashDelay}s for crash...");
                     }
 
-                    if (Time.time >= m_TakeoverCompleteTime + 30f)
+                    if (Time.time >= m_TakeoverCompleteTime + m_CrashDelay)
                     {
                         ExecuteFakeCrash();
                         yield break; // Stop the loop
@@ -429,6 +467,7 @@ namespace Unity.VRTemplate
             SetNextDisappearTime();
             SetNextSoundTime();
             SetNextControlTakeoverTime();
+            SetNextPoltergeistTime();
         }
 
         private void SetNextGlitchTime()
@@ -468,6 +507,12 @@ namespace Unity.VRTemplate
             float baseInterval = Mathf.Lerp(60f, 10f, m_TakeoverProgress);
             float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
             m_NextControlTakeoverTime = m_ElapsedTime + baseInterval + randomVariation;
+        }
+
+        private void SetNextPoltergeistTime()
+        {
+            float baseInterval = Mathf.Lerp(45f, 15f, m_TakeoverProgress);
+            m_NextPoltergeistTime = m_ElapsedTime + baseInterval + Random.Range(0f, 10f);
         }
 
         #endregion
@@ -511,6 +556,18 @@ namespace Unity.VRTemplate
             Vector3 originalPos = obj.transform.position;
             Quaternion originalRot = obj.transform.rotation;
             Vector3 originalScale = obj.transform.localScale;
+
+            // Material Swap
+            Renderer renderer = obj.GetComponent<Renderer>();
+            Material[] runtimeOriginalMaterials = null;
+            if (renderer != null && m_GlitchMaterial != null)
+            {
+                runtimeOriginalMaterials = renderer.materials;
+                // Swap all materials to glitch
+                Material[] glitchMats = new Material[runtimeOriginalMaterials.Length];
+                for(int m=0; m<glitchMats.Length; m++) glitchMats[m] = m_GlitchMaterial;
+                renderer.materials = glitchMats;
+            }
 
             for (int i = 0; i < glitchSteps; i++)
             {
@@ -557,7 +614,6 @@ namespace Unity.VRTemplate
                 // Flicker visibility
                 if (Random.value < 0.3f * m_TakeoverProgress)
                 {
-                    var renderer = obj.GetComponent<Renderer>();
                     if (renderer != null)
                     {
                         renderer.enabled = false;
@@ -567,6 +623,12 @@ namespace Unity.VRTemplate
                 }
 
                 yield return new WaitForSeconds(glitchDuration / glitchSteps);
+            }
+
+            // Restore Materials
+            if (renderer != null && runtimeOriginalMaterials != null)
+            {
+                renderer.materials = runtimeOriginalMaterials;
             }
 
             // Return to original or slightly offset position
@@ -908,10 +970,13 @@ namespace Unity.VRTemplate
                     
                     // Lub
                     HapticPulse(intensity * 0.7f, 0.05f);
+                    if(m_HeartbeatSound != null && m_AudioSource != null) m_AudioSource.PlayOneShot(m_HeartbeatSound, intensity * 0.5f);
+                    
                     yield return new WaitForSeconds(0.1f);
                     
                     // Dub
                     HapticPulse(intensity, 0.05f);
+                    // Optional: Second heartbeat sound usually softer or same
                 }
 
                 yield return new WaitForSeconds(beatInterval - 0.1f);
@@ -1094,10 +1159,58 @@ namespace Unity.VRTemplate
                 AudioSource.PlayClipAtPoint(m_CrashSound, m_PlayerCamera.transform.position, 1.0f);
             }
 
-            // Show Blue Screen / Crash UI
-            if (m_CrashUI != null)
+            // Disable Locomotion
+            if (m_MoveProvider != null) m_MoveProvider.enabled = false;
+            if (m_TurnProvider != null) m_TurnProvider.enabled = false;
+            if (m_TeleportProvider != null) m_TeleportProvider.enabled = false;
+
+            // Hide Controllers (Hands)
+            if (m_LeftController != null) m_LeftController.gameObject.SetActive(false);
+            if (m_RightController != null) m_RightController.gameObject.SetActive(false);
+
+            // Head-Lock Crash UI & Full Cover
+            if (m_CrashUI != null && m_PlayerCamera != null)
             {
+                // Force Camera to Solid Color (BSOD effect) to hide the world
+                m_PlayerCamera.clearFlags = CameraClearFlags.SolidColor;
+                m_PlayerCamera.backgroundColor = new Color(0.0f, 0.0f, 0.5f); // Dark Blue (Classic BSOD)
+                // Remove Culling Mask to hide world geometry if SolidColor isn't enough (usually it is if it clears depth)
+                // Actually, SolidColor just clears the background. Geometry is still drawn ON TOP.
+                // To hide the world, we must set culling mask to ONLY UI.
+                
+                // Assuming CrashUI is on "UI" layer (index 5) or similar. 
+                // Let's just create a "Blackout" effect by changing the Culling Mask.
+                // NOTE: This might hide the CrashUI if it's not on the layer we pick.
+                // Safer bet: Move CrashUI to "Default" or check its layer? 
+                // Let's rely on the Canvas PlaneDistance 0.3 to be in front of everything, 
+                // and the Background Image of the Canvas to be opaque.
+                
+                // Since user said "only see text", their background image is missing/transparent.
+                // Let's try to add a background fallback or just rely on the Camera Clear Flags + Culling Mask = Nothing.
+                m_PlayerCamera.cullingMask = 0; // Render NOTHING
+                // Wait, if we render NOTHING, we won't see the Canvas!
+                // We need to render the layer the Canvas is on. Usually "UI" (5).
+                m_PlayerCamera.cullingMask = 1 << 5; // User *must* have UI on UI layer.
+                
+                // To be safe, let's just use the Solid Color and hope they fix their UI background?
+                // Or better: Use the Camera Clear Flag, but since we can't easily manipulate the Canvas content here...
+                
+                // Let's stick to the visual: Screen Space Camera.
                 m_CrashUI.SetActive(true);
+                
+                Canvas crashCanvas = m_CrashUI.GetComponent<Canvas>();
+                if (crashCanvas != null)
+                {
+                    crashCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+                    crashCanvas.worldCamera = m_PlayerCamera;
+                    crashCanvas.planeDistance = 0.3f; // Close to eyes
+                }
+                else
+                {
+                    m_CrashUI.transform.position = m_PlayerCamera.transform.position + m_PlayerCamera.transform.forward * 0.5f;
+                    m_CrashUI.transform.LookAt(m_PlayerCamera.transform);
+                    m_CrashUI.transform.Rotate(0, 180, 0);
+                }
             }
 
             // Pause the game time to simulate freeze
@@ -1146,6 +1259,67 @@ namespace Unity.VRTemplate
             // Clear the flag
             if (isLeft) m_LeftHandGlitchCoroutine = null;
             else m_RightHandGlitchCoroutine = null;
+        }
+
+        #endregion
+
+        #region Private Methods - Poltergeist
+
+        private void TriggerPoltergeist()
+        {
+            List<GameObject> moveableObjects = new List<GameObject>();
+            foreach(var obj in m_AffectedObjects)
+            {
+                if(obj == null || !obj.activeInHierarchy) continue;
+                // We now accept ANY affected object for Poltergeist, not just non-kinematic RBs
+                moveableObjects.Add(obj);
+            }
+
+            if(moveableObjects.Count == 0) return;
+
+            GameObject target = moveableObjects[Random.Range(0, moveableObjects.Count)];
+            Rigidbody rb = target.GetComponent<Rigidbody>();
+            
+            PlayCreepySound(target.transform);
+
+            // If allowed to throw AND has a rigidbody that can move...
+            if(m_AllowPoltergeistThrow && rb != null && !rb.isKinematic)
+            {
+                // Throw direction: Up and random side
+                Vector3 force = Vector3.up * Random.Range(2f, 5f) + Random.insideUnitSphere * 2f;
+                rb.AddForce(force, ForceMode.Impulse);
+                rb.AddTorque(Random.insideUnitSphere * 5f, ForceMode.Impulse);
+                if(m_DebugMode) Debug.Log($"Poltergeist threw {target.name}");
+            }
+            else
+            {
+                // Just Rattle In Place (Violent Glitch)
+                StartCoroutine(RattleObject(target));
+                if(m_DebugMode) Debug.Log($"Poltergeist rattled {target.name}");
+            }
+        }
+
+        private IEnumerator RattleObject(GameObject obj)
+        {
+            Vector3 originalPos = obj.transform.position;
+            Quaternion originalRot = obj.transform.rotation;
+            float duration = 1.0f;
+            float elapsed = 0f;
+            float intensity = 0.05f; // Shake amount
+
+            while(elapsed < duration)
+            {
+                // Random shake
+                obj.transform.position = originalPos + Random.insideUnitSphere * intensity;
+                obj.transform.rotation = originalRot * Quaternion.Euler(Random.insideUnitSphere * intensity * 100f);
+                
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            // Restore
+            obj.transform.position = originalPos;
+            obj.transform.rotation = originalRot;
         }
 
         #endregion

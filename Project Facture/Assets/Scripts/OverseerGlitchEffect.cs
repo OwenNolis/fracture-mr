@@ -91,6 +91,16 @@ namespace Unity.VRTemplate
         public static OverseerGlitchEffect Instance { get; private set; }
         public Material GlitchMaterial => m_GlitchMaterial;
 
+        [Header("Shader Reference")]
+        [SerializeField]
+        private Shader m_GlitchShader;
+
+        private void Start()
+        {
+            // Help user debug missing glitches
+            Debug.LogWarning("OVERSEER GLITCH TIP: Ensure you have added the 'Overseer Glitch Feature' to your URP Renderer Data asset!");
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -101,10 +111,18 @@ namespace Unity.VRTemplate
             }
 
             // Create glitch material if shader exists
-            Shader glitchShader = Shader.Find("Hidden/OverseerGlitch");
-            if (glitchShader != null)
+            if (m_GlitchShader == null)
             {
-                m_GlitchMaterial = new Material(glitchShader);
+                m_GlitchShader = Shader.Find("Hidden/OverseerGlitch");
+            }
+
+            if (m_GlitchShader != null)
+            {
+                m_GlitchMaterial = new Material(m_GlitchShader);
+            }
+            else
+            {
+                Debug.LogError("OverseerGlitchEffect: Could not find shader 'Hidden/OverseerGlitch'. Please assign it manually in the inspector.");
             }
         }
 
