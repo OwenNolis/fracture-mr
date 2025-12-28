@@ -41,15 +41,17 @@ namespace Unity.VRTemplate
             m_CrashText.text += header;
             yield return new WaitForSecondsRealtime(0.2f);
 
-            // Line 2: Typewriter Random Error
-            string message = m_ErrorMessages[Random.Range(0, m_ErrorMessages.Length)];
-            foreach (char c in message)
+            // Display ALL error messages with typewriter effect
+            foreach (string message in m_ErrorMessages)
             {
-                m_CrashText.text += c;
-                yield return new WaitForSecondsRealtime(0.02f); // Faster typing
+                foreach (char c in message)
+                {
+                    m_CrashText.text += c;
+                    yield return new WaitForSecondsRealtime(0.02f); // Faster typing
+                }
+                m_CrashText.text += "\n";
+                yield return new WaitForSecondsRealtime(0.15f); // Brief pause between messages
             }
-            
-            m_CrashText.text += "\n";
             yield return new WaitForSecondsRealtime(0.2f);
 
             // Line 3: Footer
