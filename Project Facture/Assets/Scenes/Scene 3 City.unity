@@ -7911,6 +7911,40 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1503105948901746, guid: 1b31a4ba2be11f24db5162f290d897fc, type: 3}
   m_PrefabInstance: {fileID: 718034644}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &91046051
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 91046052}
+  m_Layer: 0
+  m_Name: OverseerSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &91046052
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 91046051}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 50.41041, y: 2.99999, z: -37.98574}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 450727370}
+  - {fileID: 591017343}
+  - {fileID: 1838978852}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &91355121
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40078,7 +40112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unity.VRTemplate.OverseerSystem
   m_AutoStart: 1
-  m_TakeoverDuration: 10
+  m_TakeoverDuration: 100
   m_AffectedObjects: []
   m_AutoFindAffectedObjects: 1
   m_AffectedObjectTag: AffectedByOverseer
@@ -40094,6 +40128,7 @@ MonoBehaviour:
   m_AudioSource: {fileID: 0}
   m_CreepySounds: []
   m_PostProcessVolume: {fileID: 0}
+  m_GlitchController: {fileID: 0}
   m_GlitchColor: {r: 1, g: 0, b: 0, a: 0.1}
   m_CrashUI: {fileID: 713180167}
   m_CrashSound: {fileID: 8300000, guid: 16fba6d30ed741d4a9fdd6e79ee2f3ac, type: 3}
@@ -40108,12 +40143,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 450727368}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 50.41041, y: 2.99999, z: -37.98574}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 91046052}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &450827172
 PrefabInstance:
@@ -52618,6 +52653,57 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4409339199164164, guid: 33c70bc186c84704198bc433f6ef4385, type: 3}
   m_PrefabInstance: {fileID: 590506522}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &591017341
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 591017343}
+  - component: {fileID: 591017342}
+  m_Layer: 0
+  m_Name: GlitchController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &591017342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591017341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8d6d0b20346484468cb6e6ba0ded77f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GlitchController
+  material: {fileID: 2100000, guid: 4272c9d63faf6074d8a1b66f8ed61e8a, type: 2}
+  noiseAmount: 0
+  glitchStrength: 0
+  scanLineStrength: 0
+  enableAutoGlitch: 0
+  autoGlitchIntensity: 0.1
+  autoGlitchInterval: 5
+--- !u!4 &591017343
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591017341}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 10.712048, y: -0.69326997, z: -8.618938}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 91046052}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &591382450 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1810545057222664, guid: db139b3584c5d7a478f361c33af2c1b1, type: 3}
@@ -64005,9 +64091,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Unity.VRTemplate.OverseerCrashEffect
   m_CrashText: {fileID: 1596731257}
   m_ErrorMessages:
-  - SYSTEM FAILURE
   - CRITICAL ERROR
-  - OVERSEER TAKEOVER COMPLETE
   - '>> CONTROL OVERTAKEN <<
 
     >> FRACTURE.EXE IMMINENT <<
@@ -85385,20 +85469,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e3e49d188ea144f4b850bf1ea9b0774, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unity.VRTemplate.OverseerGlitchEffect
+  m_GlitchMaterial: {fileID: 0}
   m_OverseerSystem: {fileID: 450727369}
-  m_EnableChromaticAberration: 1
-  m_MaxChromaticIntensity: 0.5
-  m_EnableDistortion: 1
-  m_MaxDistortion: 0.02
-  m_EnableScanlines: 1
-  m_ScanlineDensity: 300
-  m_EnableFlicker: 1
-  m_MaxFlickerIntensity: 0.2
-  m_EnableColorShift: 1
-  m_GlitchColor: {r: 1, g: 0, b: 0, a: 0.1}
-  m_EnableNoise: 1
-  m_MaxNoiseIntensity: 0.3
-  m_GlitchShader: {fileID: 0}
+  m_GlitchController: {fileID: 0}
+  m_EnableAutoBursts: 1
+  m_MinBurstInterval: 5
+  m_MaxBurstInterval: 20
 --- !u!4 &966457486 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4952110742379318, guid: a618b3fca0c9cf740b414a43a5d84c76, type: 3}
@@ -171287,6 +171363,56 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4609659598472532, guid: 78e46c5ab802b364480019fbba9725aa, type: 3}
   m_PrefabInstance: {fileID: 1838049992}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1838978851
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1838978852}
+  - component: {fileID: 1838978853}
+  m_Layer: 0
+  m_Name: OverseerGlitchEffect
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1838978852
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1838978851}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 91046052}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1838978853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1838978851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3e49d188ea144f4b850bf1ea9b0774, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unity.VRTemplate.OverseerGlitchEffect
+  m_GlitchMaterial: {fileID: 2100000, guid: 4272c9d63faf6074d8a1b66f8ed61e8a, type: 2}
+  m_OverseerSystem: {fileID: 450727369}
+  m_GlitchController: {fileID: 591017342}
+  m_EnableAutoBursts: 1
+  m_MinBurstInterval: 5
+  m_MaxBurstInterval: 20
 --- !u!1001 &1839517302
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -200806,6 +200932,6 @@ SceneRoots:
   - {fileID: 1225377955}
   - {fileID: 127183762}
   - {fileID: 48853299}
-  - {fileID: 450727370}
   - {fileID: 2076910040}
   - {fileID: 295082365}
+  - {fileID: 91046052}

@@ -92,6 +92,10 @@ namespace Unity.VRTemplate
         private GameObject m_PostProcessVolume;
 
         [SerializeField]
+        [Tooltip("Reference to the GlitchController for shader-based glitch effects.")]
+        private GlitchController m_GlitchController;
+
+        [SerializeField]
         [Tooltip("Color to tint the screen during intense moments.")]
         private Color m_GlitchColor = new Color(1f, 0f, 0f, 0.1f);
 
@@ -160,6 +164,13 @@ namespace Unity.VRTemplate
         private const float PHASE_3_END = 0.85f;     // 60-85% - Intense
         // 85-100% - Full takeover
 
+        // Glitch Controller tracking
+        private float m_GlitchBurstTimer = 0f;
+        private float m_TargetNoiseAmount = 0f;
+        private float m_TargetGlitchStrength = 0f;
+        private float m_TargetScanLineStrength = 0f;
+        private float m_GlitchLerpSpeed = 2f;
+
         #endregion
 
         #region Unity Lifecycle
@@ -195,6 +206,9 @@ namespace Unity.VRTemplate
                 ApplyControlTakeover();
             }
 
+            // Update the glitch controller shader effects based on progress
+            UpdateGlitchController();
+
             if (m_DebugMode)
             {
                 Debug.Log($"Overseer Progress: {m_TakeoverProgress * 100:F1}% | Phase: {GetCurrentPhase()}");
@@ -226,7 +240,7 @@ namespace Unity.VRTemplate
             m_TakeoverProgress = 0f;
 
             m_MainLoopCoroutine = StartCoroutine(OverseerMainLoop());
-             
+
             // Start heartbeat
             StartCoroutine(HeartbeatRoutine());
 
@@ -261,6 +275,12 @@ namespace Unity.VRTemplate
             }
 
             RestoreAllObjects();
+
+            // Reset glitch controller to normal values
+            if (m_GlitchController != null)
+            {
+                m_GlitchController.ResetGlitch();
+            }
 
             if (m_DebugMode)
             {
@@ -313,7 +333,7 @@ namespace Unity.VRTemplate
                     m_AffectedObjects.Add(obj);
                 }
             }
-            
+
             Debug.Log($"[OverseerSystem] Found {m_AffectedObjects.Count} affected objects. Tag: {m_AffectedObjectTag}");
             if (m_AffectedObjects.Count == 0)
             {
@@ -355,6 +375,16 @@ namespace Unity.VRTemplate
             if (m_TeleportProvider == null)
             {
                 m_TeleportProvider = FindFirstObjectByType<UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider>();
+            }
+
+            // Try to find glitch controller
+            if (m_GlitchController == null)
+            {
+                m_GlitchController = FindFirstObjectByType<GlitchController>();
+                if (m_GlitchController != null)
+                {
+                    Debug.Log("[OverseerSystem] Found GlitchController - shader effects will be applied during takeover.");
+                }
             }
         }
 
@@ -539,6 +569,10 @@ namespace Unity.VRTemplate
                 StartCoroutine(GlitchObject(obj));
             }
 
+            // Trigger shader glitch burst synchronized with object glitches
+            float burstDuration = Mathf.Lerp(0.3f, 1.0f, m_TakeoverProgress);
+            TriggerGlitchBurst(burstDuration);
+
             if (m_DebugMode)
             {
                 Debug.Log($"Glitch triggered on {numObjectsToGlitch} object(s)");
@@ -565,7 +599,7 @@ namespace Unity.VRTemplate
                 runtimeOriginalMaterials = renderer.materials;
                 // Swap all materials to glitch
                 Material[] glitchMats = new Material[runtimeOriginalMaterials.Length];
-                for(int m=0; m<glitchMats.Length; m++) glitchMats[m] = m_GlitchMaterial;
+                for (int m = 0; m < glitchMats.Length; m++) glitchMats[m] = m_GlitchMaterial;
                 renderer.materials = glitchMats;
             }
 
@@ -577,9 +611,9 @@ namespace Unity.VRTemplate
                     Random.Range(-glitchIntensity, glitchIntensity),
                     Random.Range(-glitchIntensity, glitchIntensity)
                 );
-                
+
                 Vector3 targetPos = originalPos + glitchOffset;
-                
+
                 // Clamp to max 1.0f meter from original position
                 if (Vector3.Distance(targetPos, originalPos) > 1.0f)
                 {
@@ -657,9 +691,9 @@ namespace Unity.VRTemplate
                     0,
                     Random.Range(-permanentOffset, permanentOffset)
                 );
-                
+
                 Vector3 targetFinalPos = originalPos + finalOffset;
-                 if (Vector3.Distance(targetFinalPos, originalPos) > 1.0f)
+                if (Vector3.Distance(targetFinalPos, originalPos) > 1.0f)
                 {
                     targetFinalPos = originalPos + (targetFinalPos - originalPos).normalized * 1.0f;
                 }
@@ -707,7 +741,7 @@ namespace Unity.VRTemplate
             {
                 targetObj = visibleObjects[Random.Range(0, visibleObjects.Count)];
             }
-            else if (availableObjects.Count > 0) 
+            else if (availableObjects.Count > 0)
             {
                 // Fallback for edge cases
                 targetObj = availableObjects[Random.Range(0, availableObjects.Count)];
@@ -726,7 +760,7 @@ namespace Unity.VRTemplate
 
             // Execute displacement logic
             ExecuteDisplacement(targetObj, displacementAmount, m_TakeoverProgress >= PHASE_2_END);
-            
+
             // Spatial Audio: sound comes from the object's original position (ghostly) or new position
             PlayCreepySound(targetObj.transform);
 
@@ -741,7 +775,7 @@ namespace Unity.VRTemplate
             if (m_PlayerCamera == null || obj == null) return false;
 
             Vector3 viewportPos = m_PlayerCamera.WorldToViewportPoint(obj.transform.position);
-            
+
             // Check if within viewport (taking a bit of margin to be safe)
             bool inViewport = viewportPos.x >= -0.1f && viewportPos.x <= 1.1f &&
                               viewportPos.y >= -0.1f && viewportPos.y <= 1.1f &&
@@ -755,15 +789,15 @@ namespace Unity.VRTemplate
 
         private void ExecuteDisplacement(GameObject obj, float amount, bool instant)
         {
-             if (obj == null) return;
-             
-             Vector3 originalPos = m_OriginalPositions[obj];
-             Vector3 displacement = new Vector3(
-                Random.Range(-amount, amount),
-                0,
-                Random.Range(-amount, amount)
-            );
-            
+            if (obj == null) return;
+
+            Vector3 originalPos = m_OriginalPositions[obj];
+            Vector3 displacement = new Vector3(
+               Random.Range(-amount, amount),
+               0,
+               Random.Range(-amount, amount)
+           );
+
             Vector3 targetPos = obj.transform.position + displacement;
 
             // Clamp to 1m from ORIGINAL position
@@ -772,7 +806,7 @@ namespace Unity.VRTemplate
                 Vector3 dir = (targetPos - originalPos).normalized;
                 targetPos = originalPos + dir * 1.0f;
             }
-            
+
             // "The Watcher" Mechanic: Object rotates to face the player
             Quaternion targetRot = obj.transform.rotation;
             if (Random.value < 0.4f + (m_TakeoverProgress * 0.4f)) // Chance increases with progress
@@ -787,13 +821,13 @@ namespace Unity.VRTemplate
             }
             else if (instant && Random.value < 0.5f)
             {
-                 // Small random jitter instead of look at
-                 targetRot = obj.transform.rotation * Quaternion.Euler(0, Random.Range(-15f, 15f), 0);
+                // Small random jitter instead of look at
+                targetRot = obj.transform.rotation * Quaternion.Euler(0, Random.Range(-15f, 15f), 0);
             }
-            
+
             if (!instant)
             {
-                 StartCoroutine(SmoothDisplacement(obj, targetPos, targetRot, 2f));
+                StartCoroutine(SmoothDisplacement(obj, targetPos, targetRot, 2f));
             }
             else
             {
@@ -879,6 +913,8 @@ namespace Unity.VRTemplate
             if (Random.value < disappearChance)
             {
                 StartCoroutine(DisappearObject(obj));
+                // Brief glitch burst when objects vanish
+                TriggerGlitchBurst(0.4f);
             }
         }
 
@@ -941,15 +977,15 @@ namespace Unity.VRTemplate
             if (m_CreepySounds == null || m_CreepySounds.Length == 0) return;
 
             AudioClip clip = m_CreepySounds[Random.Range(0, m_CreepySounds.Length)];
-            
+
             // Spatial Audio Hallucination: Play from specific object source if provided
             if (source != null)
             {
-                 AudioSource.PlayClipAtPoint(clip, source.position, 1.0f);
+                AudioSource.PlayClipAtPoint(clip, source.position, 1.0f);
             }
             else if (m_AudioSource != null)
             {
-                 // Fallback to 2D / Head
+                // Fallback to 2D / Head
                 m_AudioSource.PlayOneShot(clip);
             }
         }
@@ -967,13 +1003,13 @@ namespace Unity.VRTemplate
                 if (m_TakeoverProgress > PHASE_1_END)
                 {
                     float intensity = Mathf.Lerp(0f, 0.5f, m_TakeoverProgress);
-                    
+
                     // Lub
                     HapticPulse(intensity * 0.7f, 0.05f);
-                    if(m_HeartbeatSound != null && m_AudioSource != null) m_AudioSource.PlayOneShot(m_HeartbeatSound, intensity * 0.5f);
-                    
+                    if (m_HeartbeatSound != null && m_AudioSource != null) m_AudioSource.PlayOneShot(m_HeartbeatSound, intensity * 0.5f);
+
                     yield return new WaitForSeconds(0.1f);
-                    
+
                     // Dub
                     HapticPulse(intensity, 0.05f);
                     // Optional: Second heartbeat sound usually softer or same
@@ -998,7 +1034,7 @@ namespace Unity.VRTemplate
         }
 
 
-        
+
         private void ApplyScreenEffects()
         {
             // Screen effects intensity based on progress
@@ -1037,6 +1073,117 @@ namespace Unity.VRTemplate
             }
 
             m_PlayerCamera.transform.localPosition = originalPos;
+        }
+
+        /// <summary>
+        /// Updates the GlitchController shader parameters based on takeover progress.
+        /// Creates an evolving glitch effect that intensifies across the phases.
+        /// Values are tuned to minimize VR motion sickness by keeping distortion low.
+        /// </summary>
+        private void UpdateGlitchController()
+        {
+            if (m_GlitchController == null) return;
+
+            // Decrement glitch burst timer
+            if (m_GlitchBurstTimer > 0f)
+            {
+                m_GlitchBurstTimer -= Time.deltaTime;
+            }
+
+            // Calculate base values based on current phase
+            // VR-FRIENDLY VALUES: Noise and scanlines are safe, glitch/distortion causes motion sickness
+            float baseNoiseAmount = 0f;
+            float baseGlitchStrength = 0f;      // Keep this LOW - main cause of VR sickness
+            float baseScanLineStrength = 0f;
+
+            // Phase 1 (0-30%): Very subtle - barely noticeable
+            if (m_TakeoverProgress < PHASE_1_END)
+            {
+                float phaseProgress = m_TakeoverProgress / PHASE_1_END;
+                baseNoiseAmount = Mathf.Lerp(0f, 0.03f, phaseProgress);
+                baseGlitchStrength = Mathf.Lerp(0f, 0.005f, phaseProgress);  // Very low
+                baseScanLineStrength = Mathf.Lerp(0f, 0.08f, phaseProgress);
+            }
+            // Phase 2 (30-60%): Noticeable - player starts to notice something is wrong
+            else if (m_TakeoverProgress < PHASE_2_END)
+            {
+                float phaseProgress = (m_TakeoverProgress - PHASE_1_END) / (PHASE_2_END - PHASE_1_END);
+                baseNoiseAmount = Mathf.Lerp(0.03f, 0.12f, phaseProgress);
+                baseGlitchStrength = Mathf.Lerp(0.005f, 0.02f, phaseProgress);  // Still low
+                baseScanLineStrength = Mathf.Lerp(0.08f, 0.2f, phaseProgress);
+            }
+            // Phase 3 (60-85%): Intense - clearly corrupted but still comfortable
+            else if (m_TakeoverProgress < PHASE_3_END)
+            {
+                float phaseProgress = (m_TakeoverProgress - PHASE_2_END) / (PHASE_3_END - PHASE_2_END);
+                baseNoiseAmount = Mathf.Lerp(0.12f, 0.25f, phaseProgress);
+                baseGlitchStrength = Mathf.Lerp(0.02f, 0.05f, phaseProgress);  // Moderate max
+                baseScanLineStrength = Mathf.Lerp(0.2f, 0.4f, phaseProgress);
+            }
+            // Phase 4 (85-100%): Full Takeover - maximum corruption (still VR-safe)
+            else
+            {
+                float phaseProgress = (m_TakeoverProgress - PHASE_3_END) / (1f - PHASE_3_END);
+                baseNoiseAmount = Mathf.Lerp(0.25f, 0.45f, phaseProgress);     // Noise is safe
+                baseGlitchStrength = Mathf.Lerp(0.05f, 0.1f, phaseProgress);   // Cap at 10% distortion
+                baseScanLineStrength = Mathf.Lerp(0.4f, 0.6f, phaseProgress);  // Scanlines are safe
+            }
+
+            // Apply glitch burst multiplier during active bursts
+            // VR-FRIENDLY: Lower burst multiplier to prevent sudden jumps
+            float burstMultiplier = 1f;
+            if (m_GlitchBurstTimer > 0f)
+            {
+                // Reduced burst intensity for VR comfort
+                burstMultiplier = Mathf.Lerp(1.2f, 1.8f, m_TakeoverProgress);
+
+                // Less randomness for more predictable/comfortable experience
+                burstMultiplier *= Random.Range(0.9f, 1.1f);
+            }
+
+            // Set target values with burst multiplier
+            // VR-FRIENDLY: Extra cap on glitch strength to never exceed safe threshold
+            m_TargetNoiseAmount = Mathf.Clamp01(baseNoiseAmount * burstMultiplier);
+            m_TargetGlitchStrength = Mathf.Clamp(baseGlitchStrength * burstMultiplier, 0f, 0.15f);  // Hard cap at 15%
+            m_TargetScanLineStrength = Mathf.Clamp01(baseScanLineStrength * burstMultiplier);
+
+            // Smoothly interpolate current values toward targets using the helper method
+            // VR-FRIENDLY: Slower lerp speed for more gradual, comfortable transitions
+            float vrSafeLerpSpeed = m_GlitchLerpSpeed * 0.7f;
+            m_GlitchController.LerpTowards(
+                m_TargetNoiseAmount,
+                m_TargetGlitchStrength,
+                m_TargetScanLineStrength,
+                vrSafeLerpSpeed
+            );
+
+            // Random micro-fluctuations in later phases for an unsettling feel
+            // VR-FRIENDLY: Only fluctuate noise (not distortion), and reduce intensity
+            if (m_TakeoverProgress > PHASE_2_END)
+            {
+                float fluctuation = Random.Range(-0.01f, 0.01f) * m_TakeoverProgress;
+                m_GlitchController.noiseAmount = Mathf.Clamp01(m_GlitchController.noiseAmount + fluctuation);
+            }
+        }
+
+        /// <summary>
+        /// Triggers a glitch burst that temporarily intensifies all shader effects.
+        /// Call this during object glitches, displacements, and other Overseer events.
+        /// </summary>
+        public void TriggerGlitchBurst(float duration = 0.5f)
+        {
+            if (m_GlitchController == null) return;
+            m_GlitchBurstTimer = duration;
+            m_GlitchLerpSpeed = 8f; // Faster lerp during bursts for snappy response
+
+            // Reset lerp speed after burst ends
+            StartCoroutine(ResetGlitchLerpSpeed(duration));
+        }
+
+        private IEnumerator ResetGlitchLerpSpeed(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            m_GlitchLerpSpeed = 2f; // Return to normal smooth transitions
         }
 
         #endregion
@@ -1081,6 +1228,9 @@ namespace Unity.VRTemplate
             {
                 m_MoveProvider.enabled = false;
             }
+
+            // Intense glitch burst when AI takes control
+            TriggerGlitchBurst(duration * 0.5f);
 
             yield return new WaitForSeconds(duration);
 
@@ -1148,6 +1298,13 @@ namespace Unity.VRTemplate
                 Debug.Log("CRITICAL ERROR: AI TAKEOVER COMPLETE. EXECUTING FAKE CRASH.");
             }
 
+            // Maximum glitch intensity for the crash - VR-SAFE values
+            // High noise & scanlines for visual impact, low distortion to prevent nausea
+            if (m_GlitchController != null)
+            {
+                m_GlitchController.SetGlitchValues(0.8f, 0.2f, 0.9f);  // noise, glitch, scanlines
+            }
+
             // Play Windows Error Sound
             if (m_AudioSource != null && m_CrashSound != null)
             {
@@ -1174,30 +1331,30 @@ namespace Unity.VRTemplate
                 // Force Camera to Solid Color (BSOD effect) to hide the world
                 m_PlayerCamera.clearFlags = CameraClearFlags.SolidColor;
                 m_PlayerCamera.backgroundColor = new Color(0.0f, 0.0f, 0.5f); // Dark Blue (Classic BSOD)
-                // Remove Culling Mask to hide world geometry if SolidColor isn't enough (usually it is if it clears depth)
-                // Actually, SolidColor just clears the background. Geometry is still drawn ON TOP.
-                // To hide the world, we must set culling mask to ONLY UI.
-                
+                                                                              // Remove Culling Mask to hide world geometry if SolidColor isn't enough (usually it is if it clears depth)
+                                                                              // Actually, SolidColor just clears the background. Geometry is still drawn ON TOP.
+                                                                              // To hide the world, we must set culling mask to ONLY UI.
+
                 // Assuming CrashUI is on "UI" layer (index 5) or similar. 
                 // Let's just create a "Blackout" effect by changing the Culling Mask.
                 // NOTE: This might hide the CrashUI if it's not on the layer we pick.
                 // Safer bet: Move CrashUI to "Default" or check its layer? 
                 // Let's rely on the Canvas PlaneDistance 0.3 to be in front of everything, 
                 // and the Background Image of the Canvas to be opaque.
-                
+
                 // Since user said "only see text", their background image is missing/transparent.
                 // Let's try to add a background fallback or just rely on the Camera Clear Flags + Culling Mask = Nothing.
                 m_PlayerCamera.cullingMask = 0; // Render NOTHING
                 // Wait, if we render NOTHING, we won't see the Canvas!
                 // We need to render the layer the Canvas is on. Usually "UI" (5).
                 m_PlayerCamera.cullingMask = 1 << 5; // User *must* have UI on UI layer.
-                
+
                 // To be safe, let's just use the Solid Color and hope they fix their UI background?
                 // Or better: Use the Camera Clear Flag, but since we can't easily manipulate the Canvas content here...
-                
+
                 // Let's stick to the visual: Screen Space Camera.
                 m_CrashUI.SetActive(true);
-                
+
                 Canvas crashCanvas = m_CrashUI.GetComponent<Canvas>();
                 if (crashCanvas != null)
                 {
@@ -1226,7 +1383,7 @@ namespace Unity.VRTemplate
             Quaternion originalLocalRot = hand.localRotation;
 
             // Validate transform data to prevent AABB errors
-            if (float.IsNaN(originalLocalPos.x) || float.IsInfinity(originalLocalPos.x)) 
+            if (float.IsNaN(originalLocalPos.x) || float.IsInfinity(originalLocalPos.x))
             {
                 if (isLeft) m_LeftHandGlitchCoroutine = null; else m_RightHandGlitchCoroutine = null;
                 yield break;
@@ -1244,7 +1401,7 @@ namespace Unity.VRTemplate
             while (elapsed < duration)
             {
                 float t = elapsed / duration;
-                
+
                 // Use a safe lerp
                 hand.localPosition = Vector3.Lerp(originalLocalPos, originalLocalPos + offset, Mathf.Sin(t * Mathf.PI));
 
@@ -1268,35 +1425,38 @@ namespace Unity.VRTemplate
         private void TriggerPoltergeist()
         {
             List<GameObject> moveableObjects = new List<GameObject>();
-            foreach(var obj in m_AffectedObjects)
+            foreach (var obj in m_AffectedObjects)
             {
-                if(obj == null || !obj.activeInHierarchy) continue;
+                if (obj == null || !obj.activeInHierarchy) continue;
                 // We now accept ANY affected object for Poltergeist, not just non-kinematic RBs
                 moveableObjects.Add(obj);
             }
 
-            if(moveableObjects.Count == 0) return;
+            if (moveableObjects.Count == 0) return;
 
             GameObject target = moveableObjects[Random.Range(0, moveableObjects.Count)];
             Rigidbody rb = target.GetComponent<Rigidbody>();
-            
+
             PlayCreepySound(target.transform);
 
             // If allowed to throw AND has a rigidbody that can move...
-            if(m_AllowPoltergeistThrow && rb != null && !rb.isKinematic)
+            if (m_AllowPoltergeistThrow && rb != null && !rb.isKinematic)
             {
                 // Throw direction: Up and random side
                 Vector3 force = Vector3.up * Random.Range(2f, 5f) + Random.insideUnitSphere * 2f;
                 rb.AddForce(force, ForceMode.Impulse);
                 rb.AddTorque(Random.insideUnitSphere * 5f, ForceMode.Impulse);
-                if(m_DebugMode) Debug.Log($"Poltergeist threw {target.name}");
+                if (m_DebugMode) Debug.Log($"Poltergeist threw {target.name}");
             }
             else
             {
                 // Just Rattle In Place (Violent Glitch)
                 StartCoroutine(RattleObject(target));
-                if(m_DebugMode) Debug.Log($"Poltergeist rattled {target.name}");
+                if (m_DebugMode) Debug.Log($"Poltergeist rattled {target.name}");
             }
+
+            // Trigger shader glitch burst during poltergeist activity
+            TriggerGlitchBurst(0.6f);
         }
 
         private IEnumerator RattleObject(GameObject obj)
@@ -1307,12 +1467,12 @@ namespace Unity.VRTemplate
             float elapsed = 0f;
             float intensity = 0.05f; // Shake amount
 
-            while(elapsed < duration)
+            while (elapsed < duration)
             {
                 // Random shake
                 obj.transform.position = originalPos + Random.insideUnitSphere * intensity;
                 obj.transform.rotation = originalRot * Quaternion.Euler(Random.insideUnitSphere * intensity * 100f);
-                
+
                 elapsed += Time.deltaTime;
                 yield return null;
             }
