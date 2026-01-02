@@ -3389,9 +3389,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1209209762572286, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1824136348571112, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1895221429771346, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 1994378521509332, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4865875535061194, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
       propertyPath: m_RootOrder
@@ -4458,7 +4470,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 449768801037699947, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 674009217}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1290985828851699223, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       insertIndex: -1
@@ -5975,6 +5990,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1717546029878824, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -12275,6 +12294,14 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -1.94
       objectReference: {fileID: 0}
+    - target: {fileID: 6574715027064884570, guid: 8f983ec7f04dbe843bddefd61bfabe6b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.112
+      objectReference: {fileID: 0}
+    - target: {fileID: 6574715027064884570, guid: 8f983ec7f04dbe843bddefd61bfabe6b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 7.344
+      objectReference: {fileID: 0}
     - target: {fileID: 6602077866077152361, guid: 8f983ec7f04dbe843bddefd61bfabe6b, type: 3}
       propertyPath: m_LocalPosition.z
       value: -1.95
@@ -12901,6 +12928,10 @@ PrefabInstance:
     - target: {fileID: 1312190167557492, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -14036,9 +14067,45 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1032238161695550, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1272824096102426, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1301782992492686, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405493063390428, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
     - target: {fileID: 1482310652147146, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 1640380751580846, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1662333849594294, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1668078519297424, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1682820199967458, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1817305759474786, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
       objectReference: {fileID: 0}
     - target: {fileID: 4120409301429270, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
       propertyPath: m_RootOrder
@@ -15466,6 +15533,10 @@ PrefabInstance:
     - target: {fileID: 1276891466197488, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -20249,6 +20320,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4026800529414312, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_RootOrder
       value: 1582
@@ -21762,6 +21837,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1146889995313914, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -26712,6 +26791,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -30713,9 +30796,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1021716252383052, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1110286725037836, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 1115199188738618, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1773512504133518, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4349335377661648, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
       propertyPath: m_RootOrder
@@ -33919,6 +34014,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1577028480198688, guid: 4c840fb5325130b4eaf86765b419526a, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1577028480198688, guid: 4c840fb5325130b4eaf86765b419526a, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -35771,6 +35870,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1577028480198688, guid: 4c840fb5325130b4eaf86765b419526a, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1934502225816252, guid: 4c840fb5325130b4eaf86765b419526a, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -36416,6 +36519,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1572984349200980, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -36679,6 +36786,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1691729110}
     m_Modifications:
+    - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
@@ -39279,6 +39390,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4227663428808890, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.49
@@ -40932,29 +41047,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unity.VRTemplate.OverseerSystem
   m_AutoStart: 1
-  m_TakeoverDuration: 100
+  m_TakeoverDuration: 300
   m_AffectedObjects: []
   m_AutoFindAffectedObjects: 1
   m_AffectedObjectTag: AffectedByOverseer
-  m_AllowPoltergeistThrow: 0
+  m_PropagandaStaticTag: PropagandaByOverseerStatic
+  m_PropagandaStaticMaterials:
+  - {fileID: 2100000, guid: c061925ba0c8fab478aa9bc2be192eeb, type: 2}
+  - {fileID: -8392635163576290242, guid: d16f69c34ea024318a907ecc9846d844, type: 3}
+  - {fileID: -8392635163576290242, guid: f8647a929fcf943c5ae3d88a87bfd002, type: 3}
+  m_PropagandaFilmTag: PropagandaByOverseerFilm
+  m_PropagandaFilmMaterials:
+  - {fileID: 2100000, guid: a6e2fe644c5c04db5b0bdb5c5158f79a, type: 2}
+  - {fileID: 2100000, guid: 304a10a14c7d97442a8423f6d4643305, type: 2}
+  - {fileID: 2100000, guid: 323799e0f7f332546bc6bcf9cadc262f, type: 2}
   m_XROrigin: {fileID: 0}
   m_PlayerCamera: {fileID: 0}
   m_LeftController: {fileID: 1104171315}
   m_RightController: {fileID: 538969507}
-  m_MoveProvider: {fileID: 0}
-  m_TurnProvider: {fileID: 0}
-  m_TeleportProvider: {fileID: 0}
   m_GlitchMaterial: {fileID: 2100000, guid: 4272c9d63faf6074d8a1b66f8ed61e8a, type: 2}
-  m_AudioSource: {fileID: 0}
-  m_CreepySounds: []
+  m_AudioSource: {fileID: 674009218}
+  m_CreepySounds:
+  - {fileID: 8300000, guid: 645809d0ab1fcee428955c712688c2db, type: 3}
+  - {fileID: 8300000, guid: 7a6a1ae32226d6a49be65e5eb72d7cd5, type: 3}
+  - {fileID: 8300000, guid: 548bd49cf8e87214883c0a430d5a49b3, type: 3}
+  - {fileID: 8300000, guid: 20af197ae55339b44ac1c3a7e3dfd808, type: 3}
+  - {fileID: 8300000, guid: 07a44471e1352994486f909d44961bf9, type: 3}
+  - {fileID: 8300000, guid: 304e2ab422b5dab499d949c88452d16f, type: 3}
+  - {fileID: 8300000, guid: 196f0e9d23c22d447b10faf8d957e049, type: 3}
   m_PostProcessVolume: {fileID: 0}
-  m_GlitchController: {fileID: 0}
-  m_GlitchColor: {r: 1, g: 0, b: 0, a: 0.1}
+  m_GlitchController: {fileID: 591017342}
   m_CrashUI: {fileID: 713180167}
-  m_CrashSound: {fileID: 8300000, guid: 16fba6d30ed741d4a9fdd6e79ee2f3ac, type: 3}
+  m_CrashSound: {fileID: 8300000, guid: 491e09a2f20524cf682d652666575b79, type: 3}
   m_CrashDelay: 20
   m_DebugMode: 1
-  m_HeartbeatSound: {fileID: 0}
+  m_HeartbeatSound: {fileID: 8300000, guid: 7af4e1001297f04479e9f97d8d794538, type: 3}
 --- !u!4 &450727370
 Transform:
   m_ObjectHideFlags: 0
@@ -46209,13 +46336,49 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1032238161695550, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1272824096102426, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1301782992492686, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405493063390428, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
     - target: {fileID: 1482310652147146, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
       propertyPath: m_TagString
       value: Untagged
       objectReference: {fileID: 0}
+    - target: {fileID: 1640380751580846, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1662333849594294, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1668078519297424, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
+    - target: {fileID: 1682820199967458, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
+      objectReference: {fileID: 0}
     - target: {fileID: 1761127274992646, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1817305759474786, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerFilm
       objectReference: {fileID: 0}
     - target: {fileID: 4120409301429270, guid: bc6417d273c8fc442967a76b2e011f23, type: 3}
       propertyPath: m_RootOrder
@@ -47460,6 +47623,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -47845,6 +48012,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
@@ -48232,6 +48403,10 @@ PrefabInstance:
     - target: {fileID: 1312190167557492, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -50055,6 +50230,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -50321,6 +50500,10 @@ PrefabInstance:
     - target: {fileID: 1566432423268564, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -53506,6 +53689,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4494221340883130, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_RootOrder
       value: 2386
@@ -54991,6 +55178,10 @@ PrefabInstance:
     - target: {fileID: 1566432423268564, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -58536,6 +58727,10 @@ PrefabInstance:
     - target: {fileID: 1306438080068928, guid: 4c840fb5325130b4eaf86765b419526a, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1577028480198688, guid: 4c840fb5325130b4eaf86765b419526a, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1934502225816252, guid: 4c840fb5325130b4eaf86765b419526a, type: 3}
       propertyPath: m_IsActive
@@ -62469,6 +62664,135 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.6641756, y: 0.89588875, z: 0.6641756}
   m_Center: {x: -4.350349e-17, y: 0.44794437, z: -1.5914181e-15}
+--- !u!1 &674009216
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 674009217}
+  - component: {fileID: 674009218}
+  m_Layer: 2
+  m_Name: Audiosource
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &674009217
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674009216}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1871790265}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &674009218
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674009216}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1001 &676665894
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -64567,6 +64891,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1007946407900204, guid: 67ef2345f8620854891d6571beed3392, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1435717620692918, guid: 67ef2345f8620854891d6571beed3392, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1546343576449776, guid: 67ef2345f8620854891d6571beed3392, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1741225023863358, guid: 67ef2345f8620854891d6571beed3392, type: 3}
       propertyPath: m_TagString
       value: Untagged
@@ -75892,6 +76228,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -78621,6 +78961,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1018436794517354, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1232320914680138, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
       propertyPath: m_Name
       value: shop 8 restaurant (1)
@@ -78629,9 +78973,17 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Untagged
       objectReference: {fileID: 0}
+    - target: {fileID: 1597552575621908, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1608817927050782, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1708599039378622, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1728861838046728, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
       propertyPath: m_IsActive
@@ -80057,6 +80409,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1691729110}
     m_Modifications:
     - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -80653,6 +81009,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1185110553504680, guid: 1b10d00a9136c9a4b8017d2d78c2ca43, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1341678123036632, guid: 1b10d00a9136c9a4b8017d2d78c2ca43, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1385763036232668, guid: 1b10d00a9136c9a4b8017d2d78c2ca43, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1627607704508284, guid: 1b10d00a9136c9a4b8017d2d78c2ca43, type: 3}
       propertyPath: m_TagString
       value: Untagged
@@ -85232,9 +85600,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1038785563393032, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1202850584714814, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477861154172354, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1997858926548154, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4139132402188672, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
       propertyPath: m_RootOrder
@@ -86048,6 +86428,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1831442042279068, guid: 362b48367ab215c40a3faedc0916bd47, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4992716523369114, guid: 362b48367ab215c40a3faedc0916bd47, type: 3}
       propertyPath: m_RootOrder
       value: 1655
@@ -86338,6 +86722,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1146889995313914, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -91726,9 +92114,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1007946407900204, guid: 67ef2345f8620854891d6571beed3392, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1026966544967304, guid: 67ef2345f8620854891d6571beed3392, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1435717620692918, guid: 67ef2345f8620854891d6571beed3392, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1546343576449776, guid: 67ef2345f8620854891d6571beed3392, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1741225023863358, guid: 67ef2345f8620854891d6571beed3392, type: 3}
       propertyPath: m_TagString
@@ -92583,6 +92983,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1577574730751240, guid: 1ab8ec78503dec4499a43b23985880e2, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1577574730751240, guid: 1ab8ec78503dec4499a43b23985880e2, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -93322,6 +93726,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1577574730751240, guid: 1ab8ec78503dec4499a43b23985880e2, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1737280234242654, guid: 1ab8ec78503dec4499a43b23985880e2, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -93809,6 +94217,10 @@ PrefabInstance:
     - target: {fileID: 1113634236082358, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -95902,6 +96314,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1209209762572286, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1824136348571112, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1895221429771346, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
       propertyPath: m_TagString
       value: Untagged
@@ -95909,6 +96329,10 @@ PrefabInstance:
     - target: {fileID: 1954066043278534, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1994378521509332, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4865875535061194, guid: 0b1c913f0cbdd094abacade626e88dba, type: 3}
       propertyPath: m_RootOrder
@@ -98972,6 +99396,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: poster 04
       objectReference: {fileID: 0}
+    - target: {fileID: 1884613854470672, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1992900690480094, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -100769,6 +101197,10 @@ PrefabInstance:
     - target: {fileID: 1065966492939830, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4720291734270614, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_RootOrder
@@ -106804,9 +107236,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1038785563393032, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1202850584714814, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477861154172354, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1997858926548154, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4139132402188672, guid: 84afe9e081052184abfb7d4e3ee68328, type: 3}
       propertyPath: m_RootOrder
@@ -107065,6 +107509,10 @@ PrefabInstance:
     - target: {fileID: 1113634236082358, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -108660,6 +109108,10 @@ PrefabInstance:
     - target: {fileID: 1113634236082358, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1441670090228912, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_IsActive
@@ -111391,6 +111843,10 @@ PrefabInstance:
     - target: {fileID: 1276891466197488, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -115718,6 +116174,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -115860,6 +116320,10 @@ PrefabInstance:
     - target: {fileID: 1312190167557492, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -119022,6 +119486,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1939769475209728, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -125691,9 +126159,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1021716252383052, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1110286725037836, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 1115199188738618, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1773512504133518, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4349335377661648, guid: 124c7cd3b4b05454ca5cf545e23a66f1, type: 3}
       propertyPath: m_RootOrder
@@ -134083,6 +134563,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1817450218991532, guid: bb132715c9c0be14baa66a7fbf64a2b7, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1817450218991532, guid: bb132715c9c0be14baa66a7fbf64a2b7, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -134498,6 +134982,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1884613854470672, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4221141985389766, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
       propertyPath: m_RootOrder
       value: 1653
@@ -138184,6 +138672,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1884613854470672, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1992900690480094, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -140032,6 +140524,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -140202,6 +140698,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4494221340883130, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_RootOrder
       value: 1648
@@ -140316,6 +140816,10 @@ PrefabInstance:
     - target: {fileID: 1113634236082358, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1196439057461640, guid: 4e5c721e37e3c93469ed88004bfa3f58, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -145921,6 +146425,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1884613854470672, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1884613854470672, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -147565,6 +148073,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1435827416907502, guid: eebc461b4546e3a40bac853d76d0fc98, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -147698,6 +148210,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1831442042279068, guid: 362b48367ab215c40a3faedc0916bd47, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4992716523369114, guid: 362b48367ab215c40a3faedc0916bd47, type: 3}
       propertyPath: m_RootOrder
       value: 1796
@@ -147752,6 +148268,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1691729110}
     m_Modifications:
+    - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
@@ -154025,6 +154545,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4720291734270614, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_RootOrder
       value: 1584
@@ -155460,6 +155984,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1817450218991532, guid: bb132715c9c0be14baa66a7fbf64a2b7, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1817450218991532, guid: bb132715c9c0be14baa66a7fbf64a2b7, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -156142,6 +156670,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1078052829076304, guid: 215fd44762ba1c645bf8497aa0c97829, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1296812029270618, guid: 215fd44762ba1c645bf8497aa0c97829, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1652243146296464, guid: 215fd44762ba1c645bf8497aa0c97829, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1984435912400410, guid: 215fd44762ba1c645bf8497aa0c97829, type: 3}
       propertyPath: m_TagString
       value: Untagged
@@ -156965,6 +157505,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4466927674704890, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
       propertyPath: m_RootOrder
       value: 1649
@@ -157602,6 +158146,10 @@ PrefabInstance:
     - target: {fileID: 1065966492939830, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1367274368445304, guid: 811468fc60622124b9cc99710a544119, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4640522023840750, guid: 811468fc60622124b9cc99710a544119, type: 3}
       propertyPath: m_LocalPosition.x
@@ -164830,6 +165378,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1691729110}
     m_Modifications:
     - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -165260,6 +165812,10 @@ PrefabInstance:
     - target: {fileID: 1566432423268564, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1685305963551442, guid: fdb23561c48af3844a55a55e830fece8, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -170683,6 +171239,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -172592,6 +173152,10 @@ PrefabInstance:
     - target: {fileID: 1355843732291484, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
       propertyPath: m_Name
       value: poster 04 (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1884613854470672, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4221141985389766, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
       propertyPath: m_RootOrder
@@ -175008,9 +175572,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1018436794517354, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1232320914680138, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
       propertyPath: m_TagString
       value: Untagged
+      objectReference: {fileID: 0}
+    - target: {fileID: 1597552575621908, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1708599039378622, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 4046238670051348, guid: d1d60b44d4549174a9bcdf139c15df5b, type: 3}
       propertyPath: m_RootOrder
@@ -177847,6 +178423,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 4947630778378402, guid: f4fb3b922fc7c3b429ab8a3f49a4747d, type: 3}
   m_PrefabInstance: {fileID: 1869848390}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1871790265 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 449768801037699947, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
+  m_PrefabInstance: {fileID: 48853299}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1871893727
 PrefabInstance:
@@ -182402,6 +182983,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1817450218991532, guid: bb132715c9c0be14baa66a7fbf64a2b7, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1817450218991532, guid: bb132715c9c0be14baa66a7fbf64a2b7, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -184439,6 +185024,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1691729110}
     m_Modifications:
+    - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 1003170954443592, guid: 31a443e1b9841c5468a5570579a3a344, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
@@ -190979,6 +191568,10 @@ PrefabInstance:
     - target: {fileID: 1014741617584686, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
       objectReference: {fileID: 0}
     - target: {fileID: 1033582961103616, guid: 7ccaaf98e0a6d514bbb60352aed0213f, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -197847,6 +198440,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1691729110}
     m_Modifications:
     - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1057590004440826, guid: 840828e76a7d6dd44af1f5bca5bb9dad, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -200749,6 +201346,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1831442042279068, guid: 362b48367ab215c40a3faedc0916bd47, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
+    - target: {fileID: 1831442042279068, guid: 362b48367ab215c40a3faedc0916bd47, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 0
       objectReference: {fileID: 0}
@@ -201938,6 +202539,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1280351944}
     m_Modifications:
+    - target: {fileID: 1884613854470672, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
+      propertyPath: m_TagString
+      value: PropagandaByOverseerStatic
+      objectReference: {fileID: 0}
     - target: {fileID: 4221141985389766, guid: 40ee1dcabb5adec4fb16367614799732, type: 3}
       propertyPath: m_RootOrder
       value: 1581
