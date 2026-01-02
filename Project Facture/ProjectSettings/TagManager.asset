@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Anchor
   - AffectedByOverseer
+  - PropagandaByOverseerStatic
+  - PropagandaByOverseerFilm
   layers:
   - Default
   - TransparentFX

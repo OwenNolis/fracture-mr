@@ -53,11 +53,13 @@ namespace Unity.VRTemplate
                 return m_FallbackMaterial;
             }
 
+            [System.Obsolete]
             public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
             {
                 // Setup is handled in Execute
             }
 
+            [System.Obsolete]
             public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
             {
                 Material glitchMaterial = GetGlitchMaterial();
@@ -83,11 +85,20 @@ namespace Unity.VRTemplate
                 CommandBuffer cmd = CommandBufferPool.Get("Overseer Glitch");
 
                 var source = renderingData.cameraData.renderer.cameraColorTargetHandle;
+                if (source == null || source.rt == null)
+                {
+                    return;
+                }
 
                 RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
                 desc.depthBufferBits = 0;
 
                 RenderingUtils.ReAllocateIfNeeded(ref m_TempTexture, desc, name: "_OverseerGlitchTemp");
+
+                if (m_TempTexture == null || m_TempTexture.rt == null)
+                {
+                    return;
+                }
 
                 // Set the blit texture - required for URP Sample Buffer nodes with "blit" source
                 cmd.SetGlobalTexture(BlitTextureID, source);
