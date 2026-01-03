@@ -62,10 +62,14 @@ namespace Unity.VRTemplate
             [System.Obsolete]
             public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
             {
+                // DEBUG: Remove after diagnosis
+                // Debug.Log($"[OverseerGlitchFeature] Execute called. Camera: {renderingData.cameraData.camera.name}");
+
                 Material glitchMaterial = GetGlitchMaterial();
 
                 if (glitchMaterial == null)
                 {
+                    // Debug.LogWarning("[OverseerGlitchFeature] Glitch Material is null!");
                     return;
                 }
 
@@ -78,8 +82,10 @@ namespace Unity.VRTemplate
                         glitchController.glitchStrength < 0.001f &&
                         glitchController.scanLineStrength < 0.001f)
                     {
+                        // Debug.Log("[OverseerGlitchFeature] Skipping pass - Noise/Glitch/Scanline all roughly 0.");
                         return;
                     }
+                    // Debug.Log($"[OverseerGlitchFeature] Glitch Active: N:{glitchController.noiseAmount:F2} G:{glitchController.glitchStrength:F2} S:{glitchController.scanLineStrength:F2}");
                 }
 
                 CommandBuffer cmd = CommandBufferPool.Get("Overseer Glitch");
