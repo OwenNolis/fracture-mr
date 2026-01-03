@@ -683,7 +683,9 @@ namespace Unity.VRTemplate
 
             float baseNoiseAmount = 0f;
             float baseGlitchStrength = 0f;
-            float baseScanLineStrength = 0f;
+
+            // Scanlines start at MAX and fade to ZERO
+            float baseScanLineStrength = Mathf.Lerp(1.0f, 0.0f, m_TakeoverProgress);
 
             // VISUALS ONLY START AT 70%
             if (m_TakeoverProgress >= PHASE_VISUAL_START)
@@ -699,14 +701,12 @@ namespace Unity.VRTemplate
                     // 95-100%: HIGH INTENSITY RAMP
                     float chaosProgress = Mathf.InverseLerp(0.95f, 1.0f, m_TakeoverProgress);
                     baseNoiseAmount = Mathf.Lerp(0.1f, 0.4f, chaosProgress);
-                    baseScanLineStrength = Mathf.Lerp(0.2f, 0.8f, chaosProgress);
                     baseGlitchStrength = Mathf.Lerp(0.05f, 0.3f, chaosProgress);
                 }
                 else
                 {
                     // 70-95%: SUBTLE / INTERFERENCE
                     baseNoiseAmount = Mathf.Lerp(0.02f, 0.08f, glitchPhaseProgress); // Very light noise
-                    baseScanLineStrength = Mathf.Lerp(0.05f, 0.15f, glitchPhaseProgress); // Light scanlines
                     baseGlitchStrength = Mathf.Lerp(0.0f, 0.02f, glitchPhaseProgress); // Barely any distortion
                 }
             }
@@ -759,11 +759,11 @@ namespace Unity.VRTemplate
 
             if (m_GlitchController != null)
             {
-                m_GlitchController.SetGlitchValues(1.0f, 0.2f, 1.0f); // Maximize noise/scanlines
+                m_GlitchController.SetGlitchValues(1.0f, 0.2f, 0.0f); // Maximize noise, zero scanlines
             }
 
             // STOP ALL OTHER AUDIO
-            AudioSource[] allAudio = FindObjectsOfType<AudioSource>();
+            AudioSource[] allAudio = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
             foreach (var audio in allAudio)
             {
                 if (audio != m_AudioSource)
