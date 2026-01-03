@@ -16734,7 +16734,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &205269892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16954,7 +16954,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &211484216
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22165,7 +22165,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &274445132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69435,7 +69435,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!4 &851441074 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4375847937354312, guid: baaa359bab6d0664c98d6ac5f5d2ca91, type: 3}
@@ -118084,7 +118084,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!4 &1409631287 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4375847937354312, guid: baaa359bab6d0664c98d6ac5f5d2ca91, type: 3}
@@ -129582,7 +129582,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!4 &1519865850 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4375847937354312, guid: baaa359bab6d0664c98d6ac5f5d2ca91, type: 3}
@@ -130192,7 +130192,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &1531330464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130602,7 +130602,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &1534656137
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145706,7 +145706,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &1712586681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146419,7 +146419,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!4 &1718832865 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4791024120461484, guid: 3ecac0d2dcca07e488b54caced92517a, type: 3}
@@ -162123,7 +162123,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!4 &1904574925 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4375847937354312, guid: baaa359bab6d0664c98d6ac5f5d2ca91, type: 3}
@@ -171375,7 +171375,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &2034296644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180277,7 +180277,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 112
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!114 &2139380434
 MonoBehaviour:
   m_ObjectHideFlags: 0
