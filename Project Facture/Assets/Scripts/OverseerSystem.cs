@@ -1,18 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
-using UnityEngine.XR.Interaction.Toolkit.Locomotion.Movement;
-using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
 using UnityEngine.InputSystem;
 
 namespace Unity.VRTemplate
 {
     /// <summary>
-    /// AI Overseer Takeover System - Creates a progressively unsettling horror experience
-    /// where an AI slowly takes control of the VR environment over time.
-    /// Objects glitch, disappear, move slightly, and eventually the AI takes control of VR inputs.
+    /// AI Overseer Takeover System
+    /// Refactored to focus on Material/Shader manipulation and Atmosphere.
+    /// No longer affects player movement or object physics/transforms.
     /// </summary>
     public class OverseerSystem : MonoBehaviour
     {
@@ -29,16 +25,33 @@ namespace Unity.VRTemplate
 
         [Header("Affected Objects")]
         [SerializeField]
-        [Tooltip("Objects that can be affected by glitches, displacement, and disappearance.")]
+        [Tooltip("Objects that can be affected by simple glitches (Glitch Material).")]
         private List<GameObject> m_AffectedObjects = new List<GameObject>();
 
         [SerializeField]
-        [Tooltip("If true, automatically finds all objects with 'Affected' tag.")]
+        [Tooltip("If true, automatically finds all objects with specified tags.")]
         private bool m_AutoFindAffectedObjects = true;
 
         [SerializeField]
-        [Tooltip("Tag to use when auto-finding affected objects.")]
+        [Tooltip("Tag for standard glitch objects.")]
         private string m_AffectedObjectTag = "AffectedByOverseer";
+
+        [Header("Propaganda Settings")]
+        [SerializeField]
+        [Tooltip("Tag for objects that should receive static/poster propaganda (e.g. Posters).")]
+        private string m_PropagandaStaticTag = "PropagandaByOverseerStatic";
+
+        [SerializeField]
+        [Tooltip("List of 'Static' or 'Poster' materials to randomly apply to static propaganda objects.")]
+        private List<Material> m_PropagandaStaticMaterials = new List<Material>();
+
+        [SerializeField]
+        [Tooltip("Tag for objects that should play the propaganda film (e.g. TVs).")]
+        private string m_PropagandaFilmTag = "PropagandaByOverseerFilm";
+
+        [SerializeField]
+        [Tooltip("List of Materials containing propaganda videos/films.")]
+        private List<Material> m_PropagandaFilmMaterials = new List<Material>();
 
         [Header("VR Control References")]
         [SerializeField]
@@ -50,24 +63,16 @@ namespace Unity.VRTemplate
         private Camera m_PlayerCamera;
 
         [SerializeField]
-        [Tooltip("Left hand controller transform.")]
+        [Tooltip("Left hand controller transform (for Haptics).")]
         private Transform m_LeftController;
 
         [SerializeField]
-        [Tooltip("Right hand controller transform.")]
+        [Tooltip("Right hand controller transform (for Haptics).")]
         private Transform m_RightController;
-
-        [SerializeField]
-        [Tooltip("Reference to movement provider for locomotion takeover.")]
-        private ContinuousMoveProvider m_MoveProvider;
-
-        [SerializeField]
-        [Tooltip("Reference to turn provider for rotation takeover.")]
-        private ContinuousTurnProvider m_TurnProvider;
 
         [Header("Glitch Effects")]
         [SerializeField]
-        [Tooltip("Material to apply for glitch effect (optional).")]
+        [Tooltip("Material to apply for standard glitch effect.")]
         private Material m_GlitchMaterial;
 
         [SerializeField]
@@ -84,8 +89,21 @@ namespace Unity.VRTemplate
         private GameObject m_PostProcessVolume;
 
         [SerializeField]
-        [Tooltip("Color to tint the screen during intense moments.")]
-        private Color m_GlitchColor = new Color(1f, 0f, 0f, 0.1f);
+        [Tooltip("Reference to the GlitchController for shader-based glitch effects.")]
+        private GlitchController m_GlitchController;
+
+        [Header("Fake Crash Event")]
+        [SerializeField]
+        [Tooltip("UI Object (Canvas/Panel) to show when the 'crash' happens.")]
+        private GameObject m_CrashUI;
+
+        [SerializeField]
+        [Tooltip("Windows error sound effect.")]
+        private AudioClip m_CrashSound;
+
+        [SerializeField]
+        [Tooltip("Time in seconds to wait AFTER reaching 100% before crashing.")]
+        private float m_CrashDelay = 60f;
 
         [Header("Debug")]
         [SerializeField]
@@ -99,35 +117,34 @@ namespace Unity.VRTemplate
         private float m_ElapsedTime = 0f;
         private float m_TakeoverProgress = 0f; // 0 to 1
 
-        // Object tracking
-        private Dictionary<GameObject, Vector3> m_OriginalPositions = new Dictionary<GameObject, Vector3>();
-        private Dictionary<GameObject, Quaternion> m_OriginalRotations = new Dictionary<GameObject, Quaternion>();
-        private Dictionary<GameObject, Vector3> m_OriginalScales = new Dictionary<GameObject, Vector3>();
-        private Dictionary<GameObject, Material[]> m_OriginalMaterials = new Dictionary<GameObject, Material[]>();
-        private List<GameObject> m_DisappearedObjects = new List<GameObject>();
+        // Heartbeat
+        [SerializeField]
+        [Tooltip("Heartbeat sound clip (optional).")]
+        private AudioClip m_HeartbeatSound;
+
+        // Propoganda groupings
+        private List<GameObject> m_PropagandaStaticObjects = new List<GameObject>();
+        private List<GameObject> m_PropagandaFilmObjects = new List<GameObject>();
 
         // Coroutine references
         private Coroutine m_MainLoopCoroutine;
-        private Coroutine m_ControlTakeoverCoroutine;
 
-        // Control takeover
-        private bool m_IsControllingPlayer = false;
-        private float m_ControlIntensity = 0f;
-        private Vector3 m_ForcedMovementDirection;
-        private float m_ForcedRotation;
+        // Crash timing
+        private float m_TakeoverCompleteTime = -1f;
 
         // Timing for events
         private float m_NextGlitchTime = 0f;
-        private float m_NextDisplacementTime = 0f;
-        private float m_NextDisappearTime = 0f;
         private float m_NextSoundTime = 0f;
-        private float m_NextControlTakeoverTime = 0f;
 
-        // Phase thresholds (0-1 range)
-        private const float PHASE_1_END = 0.3f;      // 0-30% - Very subtle
-        private const float PHASE_2_END = 0.6f;      // 30-60% - Noticeable
-        private const float PHASE_3_END = 0.85f;     // 60-85% - Intense
-        // 85-100% - Full takeover
+        // Phase thresholds
+        private const float PHASE_VISUAL_START = 0.7f; // 70% - Glitches start here
+
+        // Glitch Controller tracking
+        private float m_GlitchBurstTimer = 0f;
+        private float m_TargetNoiseAmount = 0f;
+        private float m_TargetGlitchStrength = 0f;
+        private float m_TargetScanLineStrength = 0f;
+        private float m_GlitchLerpSpeed = 2f;
 
         #endregion
 
@@ -137,9 +154,8 @@ namespace Unity.VRTemplate
         {
             if (m_AutoFindAffectedObjects)
             {
-                FindAffectedObjects();
+                FindAllOverseerObjects();
             }
-            StoreOriginalStates();
             FindVRComponents();
         }
 
@@ -158,15 +174,12 @@ namespace Unity.VRTemplate
             m_ElapsedTime += Time.deltaTime;
             m_TakeoverProgress = Mathf.Clamp01(m_ElapsedTime / m_TakeoverDuration);
 
-            // Apply forced movement/rotation if controlling player
-            if (m_IsControllingPlayer)
-            {
-                ApplyControlTakeover();
-            }
+            // Update the glitch controller shader effects
+            UpdateGlitchController();
 
             if (m_DebugMode)
             {
-                Debug.Log($"Overseer Progress: {m_TakeoverProgress * 100:F1}% | Phase: {GetCurrentPhase()}");
+                //Debug.Log($"Overseer Progress: {m_TakeoverProgress * 100:F1}%");
             }
         }
 
@@ -179,9 +192,6 @@ namespace Unity.VRTemplate
 
         #region Public Methods
 
-        /// <summary>
-        /// Activates the Overseer system. Call this when player interacts with trigger object.
-        /// </summary>
         public void ActivateOverseer()
         {
             if (m_IsActive)
@@ -196,31 +206,29 @@ namespace Unity.VRTemplate
 
             m_MainLoopCoroutine = StartCoroutine(OverseerMainLoop());
 
+            // Start heartbeat
+            StartCoroutine(HeartbeatRoutine());
+
             if (m_DebugMode)
             {
                 Debug.Log("OVERSEER SYSTEM ACTIVATED - The takeover begins...");
             }
         }
 
-        /// <summary>
-        /// Deactivates the Overseer system and restores everything to normal.
-        /// </summary>
         public void DeactivateOverseer()
         {
             m_IsActive = false;
-            m_IsControllingPlayer = false;
 
             if (m_MainLoopCoroutine != null)
             {
                 StopCoroutine(m_MainLoopCoroutine);
             }
 
-            if (m_ControlTakeoverCoroutine != null)
+            // Reset glitch controller
+            if (m_GlitchController != null)
             {
-                StopCoroutine(m_ControlTakeoverCoroutine);
+                m_GlitchController.ResetGlitch();
             }
-
-            RestoreAllObjects();
 
             if (m_DebugMode)
             {
@@ -228,104 +236,67 @@ namespace Unity.VRTemplate
             }
         }
 
+        public float GetProgress() => m_TakeoverProgress;
+
         /// <summary>
-        /// Adds an object to be affected by the Overseer.
+        /// Restored method for backward compatibility with OverseerAffectedObject script.
+        /// Registers an object to be affected by standard glitches.
         /// </summary>
         public void AddAffectedObject(GameObject obj)
         {
-            if (!m_AffectedObjects.Contains(obj))
+            if (obj != null && !m_AffectedObjects.Contains(obj))
             {
                 m_AffectedObjects.Add(obj);
-                StoreObjectState(obj);
+                if (m_DebugMode) Debug.Log($"[OverseerSystem] Added affected object: {obj.name}");
             }
-        }
-
-        /// <summary>
-        /// Gets the current takeover progress (0-1).
-        /// </summary>
-        public float GetProgress()
-        {
-            return m_TakeoverProgress;
-        }
-
-        /// <summary>
-        /// Gets the current phase name.
-        /// </summary>
-        public string GetCurrentPhase()
-        {
-            if (m_TakeoverProgress < PHASE_1_END) return "Subtle Intrusion";
-            if (m_TakeoverProgress < PHASE_2_END) return "Growing Presence";
-            if (m_TakeoverProgress < PHASE_3_END) return "Active Manipulation";
-            return "Full Takeover";
         }
 
         #endregion
 
         #region Private Methods - Initialization
 
-        private void FindAffectedObjects()
+        private void FindAllOverseerObjects()
         {
-            GameObject[] taggedObjects = GameObject.FindGameObjectsWithTag(m_AffectedObjectTag);
-            foreach (var obj in taggedObjects)
+            // 1. Standard Glitch Objects
+            var standardObjs = GameObject.FindGameObjectsWithTag(m_AffectedObjectTag);
+            foreach (var obj in standardObjs)
             {
-                if (!m_AffectedObjects.Contains(obj))
-                {
-                    m_AffectedObjects.Add(obj);
-                }
+                if (!m_AffectedObjects.Contains(obj)) m_AffectedObjects.Add(obj);
             }
+
+            // 2. Propaganda Static (Posters)
+            var staticObjs = GameObject.FindGameObjectsWithTag(m_PropagandaStaticTag);
+            foreach (var obj in staticObjs)
+            {
+                if (!m_PropagandaStaticObjects.Contains(obj)) m_PropagandaStaticObjects.Add(obj);
+            }
+
+            // 3. Propaganda Film (TVs)
+            var filmObjs = GameObject.FindGameObjectsWithTag(m_PropagandaFilmTag);
+            foreach (var obj in filmObjs)
+            {
+                if (!m_PropagandaFilmObjects.Contains(obj)) m_PropagandaFilmObjects.Add(obj);
+            }
+
+            Debug.Log($"[OverseerSystem] Found:\n" +
+                      $"- {m_AffectedObjects.Count} Standard Affected Objects\n" +
+                      $"- {m_PropagandaStaticObjects.Count} Propaganda Static Objects\n" +
+                      $"- {m_PropagandaFilmObjects.Count} Propaganda Film Objects");
         }
 
         private void FindVRComponents()
         {
-            // Try to find XR Origin if not assigned
             if (m_XROrigin == null)
             {
                 var xrOrigin = FindFirstObjectByType<Unity.XR.CoreUtils.XROrigin>();
-                if (xrOrigin != null)
-                {
-                    m_XROrigin = xrOrigin.transform;
-                }
+                if (xrOrigin != null) m_XROrigin = xrOrigin.transform;
             }
 
-            // Try to find camera
-            if (m_PlayerCamera == null)
+            if (m_PlayerCamera == null) m_PlayerCamera = Camera.main;
+
+            if (m_GlitchController == null)
             {
-                m_PlayerCamera = Camera.main;
-            }
-
-            // Try to find move provider
-            if (m_MoveProvider == null)
-            {
-                m_MoveProvider = FindFirstObjectByType<ContinuousMoveProvider>();
-            }
-
-            // Try to find turn provider
-            if (m_TurnProvider == null)
-            {
-                m_TurnProvider = FindFirstObjectByType<ContinuousTurnProvider>();
-            }
-        }
-
-        private void StoreOriginalStates()
-        {
-            foreach (var obj in m_AffectedObjects)
-            {
-                StoreObjectState(obj);
-            }
-        }
-
-        private void StoreObjectState(GameObject obj)
-        {
-            if (obj == null) return;
-
-            m_OriginalPositions[obj] = obj.transform.position;
-            m_OriginalRotations[obj] = obj.transform.rotation;
-            m_OriginalScales[obj] = obj.transform.localScale;
-
-            var renderer = obj.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                m_OriginalMaterials[obj] = renderer.materials;
+                m_GlitchController = FindFirstObjectByType<GlitchController>();
             }
         }
 
@@ -335,32 +306,17 @@ namespace Unity.VRTemplate
 
         private IEnumerator OverseerMainLoop()
         {
-            // Initialize timing
             SetNextEventTimes();
 
             while (m_IsActive)
             {
                 float currentTime = m_ElapsedTime;
 
-                // Check for glitch events
+                // Check for material glitch events
                 if (currentTime >= m_NextGlitchTime)
                 {
-                    TriggerGlitchEffect();
+                    TriggerMaterialGlitch();
                     SetNextGlitchTime();
-                }
-
-                // Check for displacement events
-                if (currentTime >= m_NextDisplacementTime)
-                {
-                    TriggerDisplacement();
-                    SetNextDisplacementTime();
-                }
-
-                // Check for disappearance events (only after Phase 1)
-                if (m_TakeoverProgress >= PHASE_1_END && currentTime >= m_NextDisappearTime)
-                {
-                    TriggerDisappearance();
-                    SetNextDisappearTime();
                 }
 
                 // Check for sound events
@@ -370,15 +326,21 @@ namespace Unity.VRTemplate
                     SetNextSoundTime();
                 }
 
-                // Check for control takeover (only after Phase 2)
-                if (m_TakeoverProgress >= PHASE_2_END && currentTime >= m_NextControlTakeoverTime)
+                // Check for completion (Fake Crash)
+                if (m_TakeoverProgress >= 1.0f)
                 {
-                    StartControlTakeover();
-                    SetNextControlTakeoverTime();
-                }
+                    if (m_TakeoverCompleteTime < 0)
+                    {
+                        m_TakeoverCompleteTime = Time.time;
+                        if (m_DebugMode) Debug.Log($"Takeover Complete (100%). Waiting {m_CrashDelay}s for crash...");
+                    }
 
-                // Apply progressive screen effects
-                ApplyScreenEffects();
+                    if (Time.time >= m_TakeoverCompleteTime + m_CrashDelay)
+                    {
+                        ExecuteFakeCrash();
+                        yield break;
+                    }
+                }
 
                 yield return new WaitForSeconds(0.1f);
             }
@@ -387,492 +349,518 @@ namespace Unity.VRTemplate
         private void SetNextEventTimes()
         {
             SetNextGlitchTime();
-            SetNextDisplacementTime();
-            SetNextDisappearTime();
             SetNextSoundTime();
-            SetNextControlTakeoverTime();
         }
 
         private void SetNextGlitchTime()
         {
-            // More frequent glitches as takeover progresses
-            float baseInterval = Mathf.Lerp(15f, 2f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
-            m_NextGlitchTime = m_ElapsedTime + baseInterval + randomVariation;
-        }
+            // Fully random intervals based on progress
+            // Low progress: 10s to 30s
+            // High progress: 2s to 8s
+            float minInterval = Mathf.Lerp(10f, 2f, m_TakeoverProgress);
+            float maxInterval = Mathf.Lerp(30f, 8f, m_TakeoverProgress);
 
-        private void SetNextDisplacementTime()
-        {
-            // More frequent displacements as takeover progresses
-            float baseInterval = Mathf.Lerp(20f, 3f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
-            m_NextDisplacementTime = m_ElapsedTime + baseInterval + randomVariation;
-        }
-
-        private void SetNextDisappearTime()
-        {
-            // Disappearances start after Phase 1
-            float baseInterval = Mathf.Lerp(45f, 8f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
-            m_NextDisappearTime = m_ElapsedTime + baseInterval + randomVariation;
+            m_NextGlitchTime = m_ElapsedTime + Random.Range(minInterval, maxInterval);
         }
 
         private void SetNextSoundTime()
         {
             float baseInterval = Mathf.Lerp(30f, 5f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.5f, baseInterval * 0.5f);
-            m_NextSoundTime = m_ElapsedTime + baseInterval + randomVariation;
-        }
-
-        private void SetNextControlTakeoverTime()
-        {
-            // Control takeover events become more frequent in later phases
-            float baseInterval = Mathf.Lerp(60f, 10f, m_TakeoverProgress);
-            float randomVariation = Random.Range(-baseInterval * 0.3f, baseInterval * 0.3f);
-            m_NextControlTakeoverTime = m_ElapsedTime + baseInterval + randomVariation;
+            m_NextSoundTime = m_ElapsedTime + baseInterval + Random.Range(-2f, 2f);
         }
 
         #endregion
 
-        #region Private Methods - Effects
+        #region Private Methods - Material Effects
 
-        private void TriggerGlitchEffect()
+        private void TriggerMaterialGlitch()
         {
-            if (m_AffectedObjects.Count == 0) return;
+            // Requirements:
+            // - Propaganda starts at 40%
+            // - Propaganda frequent from 60%
+            // - Variable durations (short to long)
 
-            // Select random object(s) to glitch
-            int numObjectsToGlitch = Mathf.CeilToInt(m_AffectedObjects.Count * m_TakeoverProgress * 0.3f);
-            numObjectsToGlitch = Mathf.Max(1, numObjectsToGlitch);
+            if (m_TakeoverProgress < 0.4f) return; // Nothing before 40%
 
-            List<GameObject> availableObjects = new List<GameObject>(m_AffectedObjects);
-            availableObjects.RemoveAll(obj => obj == null || m_DisappearedObjects.Contains(obj));
+            // Can trigger multiple types at once in later stages
+            int simultaneousGlitches = 1;
 
-            for (int i = 0; i < numObjectsToGlitch && availableObjects.Count > 0; i++)
+            // TOTAL CHAOS PHASE (Near 100%)
+            if (m_TakeoverProgress > 0.98f)
             {
-                int index = Random.Range(0, availableObjects.Count);
-                GameObject obj = availableObjects[index];
-                availableObjects.RemoveAt(index);
-
-                StartCoroutine(GlitchObject(obj));
+                TriggerTotalChaos();
+                return;
             }
 
-            if (m_DebugMode)
+            // Scaling Intensity
+            // 75%+: 12-22 objects
+            if (m_TakeoverProgress > 0.75f)
             {
-                Debug.Log($"Glitch triggered on {numObjectsToGlitch} object(s)");
+                simultaneousGlitches = Random.Range(12, 23);
+            }
+            // 50%+: 5-12 objects
+            else if (m_TakeoverProgress > 0.5f)
+            {
+                simultaneousGlitches = Random.Range(5, 13);
+            }
+            // 40%+: 1-3 objects
+            else if (m_TakeoverProgress > 0.4f)
+            {
+                simultaneousGlitches = Random.Range(1, 4);
+            }
+
+            // Calculate Propaganda Probability based on progress
+            // 40% -> 20% chance
+            // 60% -> 70% chance (High freq)
+            // 70% + -> 95% chance
+            float propagandaChance = 0.2f;
+            if (m_TakeoverProgress > 0.6f) propagandaChance = 0.7f;
+            if (m_TakeoverProgress > 0.7f) propagandaChance = 0.95f;
+
+            for (int i = 0; i < simultaneousGlitches; i++)
+            {
+                // Determine type of glitch
+                float roll = Random.value;
+
+                // Random duration
+                // < 70%: Short to Medium (5s - 15s)
+                // > 70%: Long to Permanent-feeling (15s - 45s)
+                float minDur = 5f;
+                float maxDur = 15f;
+
+                if (m_TakeoverProgress > 0.7f)
+                {
+                    minDur = 15f;
+                    maxDur = 45f;
+                }
+
+                float duration = Random.Range(minDur, maxDur);
+
+                // Priority to Propaganda based on calculated chance
+                // Check Film
+                if (m_PropagandaFilmObjects.Count > 0 && roll < (propagandaChance * 0.4f)) // 40% of the propaganda budget is film
+                {
+                    var obj = m_PropagandaFilmObjects[Random.Range(0, m_PropagandaFilmObjects.Count)];
+
+                    // Select random film material
+                    Material randomFilm = null;
+                    if (m_PropagandaFilmMaterials.Count > 0)
+                        randomFilm = m_PropagandaFilmMaterials[Random.Range(0, m_PropagandaFilmMaterials.Count)];
+
+                    if (randomFilm != null)
+                        StartCoroutine(ApplyReplacingMaterial(obj, randomFilm, duration, "TVframes"));
+                }
+                // Check Static
+                else if (m_PropagandaStaticObjects.Count > 0 && roll < propagandaChance)
+                {
+                    var obj = m_PropagandaStaticObjects[Random.Range(0, m_PropagandaStaticObjects.Count)];
+                    // Random static material
+                    Material randomMat = null;
+                    if (m_PropagandaStaticMaterials.Count > 0)
+                        randomMat = m_PropagandaStaticMaterials[Random.Range(0, m_PropagandaStaticMaterials.Count)];
+
+                    if (randomMat != null)
+                        // Replace "posters" or "posters shop" materials
+                        StartCoroutine(ApplyReplacingMaterial(obj, randomMat, duration, "posters"));
+                }
+                else if (m_AffectedObjects.Count > 0)
+                {
+                    // Standard noise glitch for non-propaganda moments
+                    var obj = m_AffectedObjects[Random.Range(0, m_AffectedObjects.Count)];
+                    StartCoroutine(ApplyReplacingMaterial(obj, m_GlitchMaterial, Random.Range(0.2f, 1.0f), null));
+                }
             }
         }
 
-        private IEnumerator GlitchObject(GameObject obj)
+        /// <summary>
+        /// Temporarily replaces the material of an object with a glitch/propaganda material.
+        /// Optional: filtered by material name string (contains).
+        /// </summary>
+        private IEnumerator ApplyReplacingMaterial(GameObject obj, Material newMaterial, float duration, string targetMaterialNameFilter = null)
         {
-            if (obj == null) yield break;
+            if (obj == null || newMaterial == null) yield break;
 
-            float glitchDuration = Mathf.Lerp(0.1f, 0.5f, m_TakeoverProgress);
-            float glitchIntensity = Mathf.Lerp(0.02f, 0.2f, m_TakeoverProgress);
-            int glitchSteps = Random.Range(3, 8);
+            Renderer r = obj.GetComponent<Renderer>();
+            if (r == null) yield break;
 
-            Vector3 originalPos = obj.transform.position;
-            Quaternion originalRot = obj.transform.rotation;
-            Vector3 originalScale = obj.transform.localScale;
+            Material[] originalMats = r.materials;
+            Material[] newMats = new Material[originalMats.Length];
+            bool materialWasSwapped = false;
 
-            for (int i = 0; i < glitchSteps; i++)
+            for (int i = 0; i < originalMats.Length; i++)
             {
-                // Random displacement
-                Vector3 glitchOffset = new Vector3(
-                    Random.Range(-glitchIntensity, glitchIntensity),
-                    Random.Range(-glitchIntensity, glitchIntensity),
-                    Random.Range(-glitchIntensity, glitchIntensity)
-                );
-                obj.transform.position = originalPos + glitchOffset;
+                // Check if we should replace this specific material index
+                bool shouldReplace = false;
 
-                // Random rotation glitch
-                Quaternion glitchRot = Quaternion.Euler(
-                    Random.Range(-5f * m_TakeoverProgress, 5f * m_TakeoverProgress),
-                    Random.Range(-5f * m_TakeoverProgress, 5f * m_TakeoverProgress),
-                    Random.Range(-5f * m_TakeoverProgress, 5f * m_TakeoverProgress)
-                );
-                obj.transform.rotation = originalRot * glitchRot;
-
-                // Scale flicker
-                float scaleFlicker = Random.Range(0.95f, 1.05f);
-                obj.transform.localScale = originalScale * scaleFlicker;
-
-                // Flicker visibility
-                if (Random.value < 0.3f * m_TakeoverProgress)
+                if (string.IsNullOrEmpty(targetMaterialNameFilter))
                 {
-                    var renderer = obj.GetComponent<Renderer>();
-                    if (renderer != null)
+                    // No filter = replace all
+                    shouldReplace = true;
+                    if (m_DebugMode) Debug.Log($"[Overseer] Replaced material '{originalMats[i].name}' on '{obj.name}' (No filter applied)");
+                }
+                else
+                {
+                    // Filter active: Check if name contains the target string
+                    string matName = originalMats[i].name.ToLower();
+                    if (matName.Contains(targetMaterialNameFilter.ToLower()))
                     {
-                        renderer.enabled = false;
-                        yield return new WaitForSeconds(0.02f);
-                        renderer.enabled = true;
+                        shouldReplace = true;
+                        if (m_DebugMode) Debug.Log($"[Overseer] Replaced material '{originalMats[i].name}' on '{obj.name}' (MATCHED filter '{targetMaterialNameFilter}')");
+                    }
+                    else
+                    {
+                        if (m_DebugMode) Debug.Log($"[Overseer] SKIPPED material '{originalMats[i].name}' on '{obj.name}' (Did NOT match filter '{targetMaterialNameFilter}')");
                     }
                 }
 
-                yield return new WaitForSeconds(glitchDuration / glitchSteps);
+                if (shouldReplace)
+                {
+                    newMats[i] = newMaterial;
+                    // Auto-Scale Attempt: Reset tiling to 1,1
+                    if (newMats[i].HasProperty("_BaseMapST")) newMats[i].SetVector("_BaseMapST", new Vector4(1, 1, 0, 0));
+                    if (newMats[i].HasProperty("_MainTex_ST")) newMats[i].SetVector("_MainTex_ST", new Vector4(1, 1, 0, 0));
+
+                    materialWasSwapped = true;
+                }
+                else
+                {
+                    newMats[i] = originalMats[i]; // Keep original
+                }
             }
 
-            // Return to original or slightly offset position (based on progress)
-            if (m_TakeoverProgress < PHASE_2_END)
+            // Only apply if we actually found something to swap
+            if (materialWasSwapped)
             {
-                obj.transform.position = originalPos;
-                obj.transform.rotation = originalRot;
-                obj.transform.localScale = originalScale;
+                r.materials = newMats;
+
+                // Trigger visual burst if global progress is high enough
+                if (m_TakeoverProgress >= PHASE_VISUAL_START)
+                {
+                    TriggerGlitchBurst(0.2f);
+                }
+
+                yield return new WaitForSeconds(duration);
+
+                if (obj != null && r != null)
+                {
+                    r.materials = originalMats;
+                }
             }
             else
             {
-                // Leave slightly displaced after Phase 2
-                float permanentOffset = glitchIntensity * 0.3f;
-                obj.transform.position = originalPos + new Vector3(
-                    Random.Range(-permanentOffset, permanentOffset),
-                    0,
-                    Random.Range(-permanentOffset, permanentOffset)
-                );
+                if (m_DebugMode) Debug.Log($"[Overseer] FAILED to swap any materials on '{obj.name}'. Check keywords!");
             }
         }
 
-        private void TriggerDisplacement()
-        {
-            List<GameObject> availableObjects = new List<GameObject>(m_AffectedObjects);
-            availableObjects.RemoveAll(obj => obj == null || m_DisappearedObjects.Contains(obj));
+        #endregion
 
-            if (availableObjects.Count == 0) return;
-
-            GameObject obj = availableObjects[Random.Range(0, availableObjects.Count)];
-
-            // Displacement amount increases with progress
-            float displacementAmount = Mathf.Lerp(0.01f, 0.15f, m_TakeoverProgress);
-
-            // In early phases, displacement is very subtle
-            if (m_TakeoverProgress < PHASE_1_END)
-            {
-                displacementAmount *= 0.2f;
-            }
-
-            Vector3 displacement = new Vector3(
-                Random.Range(-displacementAmount, displacementAmount),
-                0, // Keep Y stable for now
-                Random.Range(-displacementAmount, displacementAmount)
-            );
-
-            // Apply displacement smoothly or instantly based on phase
-            if (m_TakeoverProgress < PHASE_2_END)
-            {
-                // Smooth, subtle movement
-                StartCoroutine(SmoothDisplacement(obj, displacement, 2f));
-            }
-            else
-            {
-                // Instant, jarring displacement
-                obj.transform.position += displacement;
-
-                // Sometimes also rotate slightly
-                if (Random.value < 0.5f)
-                {
-                    obj.transform.Rotate(0, Random.Range(-15f, 15f), 0);
-                }
-            }
-
-            if (m_DebugMode)
-            {
-                Debug.Log($"Displacement triggered: {obj.name} moved by {displacement.magnitude:F3}m");
-            }
-        }
-
-        private IEnumerator SmoothDisplacement(GameObject obj, Vector3 displacement, float duration)
-        {
-            if (obj == null) yield break;
-
-            Vector3 startPos = obj.transform.position;
-            Vector3 endPos = startPos + displacement;
-            float elapsed = 0f;
-
-            while (elapsed < duration && obj != null)
-            {
-                elapsed += Time.deltaTime;
-                float t = elapsed / duration;
-                obj.transform.position = Vector3.Lerp(startPos, endPos, t);
-                yield return null;
-            }
-        }
-
-        private void TriggerDisappearance()
-        {
-            List<GameObject> availableObjects = new List<GameObject>(m_AffectedObjects);
-            availableObjects.RemoveAll(obj => obj == null || m_DisappearedObjects.Contains(obj));
-
-            if (availableObjects.Count == 0) return;
-
-            // Don't disappear too many objects
-            if (m_DisappearedObjects.Count >= m_AffectedObjects.Count * 0.4f) return;
-
-            GameObject obj = availableObjects[Random.Range(0, availableObjects.Count)];
-
-            // Chance of disappearance increases with progress
-            float disappearChance = Mathf.Lerp(0.1f, 0.6f, m_TakeoverProgress);
-
-            if (Random.value < disappearChance)
-            {
-                StartCoroutine(DisappearObject(obj));
-            }
-        }
-
-        private IEnumerator DisappearObject(GameObject obj)
-        {
-            if (obj == null) yield break;
-
-            m_DisappearedObjects.Add(obj);
-
-            // Dramatic disappearance in later phases
-            if (m_TakeoverProgress >= PHASE_2_END)
-            {
-                // Flicker before disappearing
-                var renderer = obj.GetComponent<Renderer>();
-                if (renderer != null)
-                {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        renderer.enabled = !renderer.enabled;
-                        yield return new WaitForSeconds(0.05f);
-                    }
-                }
-            }
-
-            obj.SetActive(false);
-
-            if (m_DebugMode)
-            {
-                Debug.Log($"Object disappeared: {obj.name}");
-            }
-
-            // In later phases, objects might reappear in wrong places
-            if (m_TakeoverProgress >= PHASE_3_END && Random.value < 0.3f)
-            {
-                yield return new WaitForSeconds(Random.Range(10f, 30f));
-
-                if (obj != null)
-                {
-                    // Reappear in a different location
-                    Vector3 newPos = m_OriginalPositions[obj] + new Vector3(
-                        Random.Range(-2f, 2f),
-                        0,
-                        Random.Range(-2f, 2f)
-                    );
-                    obj.transform.position = newPos;
-                    obj.transform.rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
-                    obj.SetActive(true);
-                    m_DisappearedObjects.Remove(obj);
-
-                    if (m_DebugMode)
-                    {
-                        Debug.Log($"Object reappeared in new location: {obj.name}");
-                    }
-                }
-            }
-        }
+        #region Private Methods - Audio & Haptics
 
         private void PlayCreepySound()
         {
-            if (m_AudioSource == null || m_CreepySounds == null || m_CreepySounds.Length == 0) return;
+            if (m_CreepySounds == null || m_CreepySounds.Length == 0) return;
 
             AudioClip clip = m_CreepySounds[Random.Range(0, m_CreepySounds.Length)];
 
-            // Volume increases with progress
-            float volume = Mathf.Lerp(0.1f, 0.6f, m_TakeoverProgress);
-
-            m_AudioSource.PlayOneShot(clip, volume);
-
-            if (m_DebugMode)
+            // Play 2D
+            if (m_AudioSource != null)
             {
-                Debug.Log($"Playing creepy sound: {clip.name} at volume {volume:F2}");
+                m_AudioSource.PlayOneShot(clip);
             }
         }
 
-        private void ApplyScreenEffects()
+        private IEnumerator HeartbeatRoutine()
         {
-            // Screen effects intensity based on progress
-            if (m_PostProcessVolume != null)
+            // Haptic Heartbeat
+            while (m_IsActive)
             {
-                // Gradually increase post-processing effects
-                // This would need to be customized based on your post-processing setup
-            }
+                // Heart beat rate increases with progress (60bpm to 140bpm)
+                float bpm = Mathf.Lerp(60f, 140f, m_TakeoverProgress);
+                float beatInterval = 60f / bpm;
 
-            // Optional: Camera shake in intense moments
-            if (m_TakeoverProgress >= PHASE_3_END && Random.value < 0.01f)
-            {
-                StartCoroutine(CameraShake());
-            }
-        }
-
-        private IEnumerator CameraShake()
-        {
-            if (m_PlayerCamera == null) yield break;
-
-            float duration = 0.3f;
-            float magnitude = 0.05f * m_TakeoverProgress;
-            float elapsed = 0f;
-
-            Vector3 originalPos = m_PlayerCamera.transform.localPosition;
-
-            while (elapsed < duration)
-            {
-                float x = Random.Range(-magnitude, magnitude);
-                float y = Random.Range(-magnitude, magnitude);
-
-                m_PlayerCamera.transform.localPosition = originalPos + new Vector3(x, y, 0);
-
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            m_PlayerCamera.transform.localPosition = originalPos;
-        }
-
-        #endregion
-
-        #region Private Methods - Control Takeover
-
-        private void StartControlTakeover()
-        {
-            if (m_ControlTakeoverCoroutine != null)
-            {
-                StopCoroutine(m_ControlTakeoverCoroutine);
-            }
-
-            m_ControlTakeoverCoroutine = StartCoroutine(ControlTakeoverSequence());
-        }
-
-        private IEnumerator ControlTakeoverSequence()
-        {
-            m_IsControllingPlayer = true;
-
-            // Duration and intensity based on progress
-            float duration = Mathf.Lerp(1f, 5f, m_TakeoverProgress);
-            m_ControlIntensity = Mathf.Lerp(0.2f, 1f, m_TakeoverProgress);
-
-            // Random forced movement direction
-            m_ForcedMovementDirection = new Vector3(
-                Random.Range(-1f, 1f),
-                0,
-                Random.Range(-1f, 1f)
-            ).normalized;
-
-            // Random forced rotation
-            m_ForcedRotation = Random.Range(-30f, 30f) * m_ControlIntensity;
-
-            if (m_DebugMode)
-            {
-                Debug.Log($"Control takeover started! Duration: {duration:F1}s, Intensity: {m_ControlIntensity:F2}");
-            }
-
-            yield return new WaitForSeconds(duration);
-
-            m_IsControllingPlayer = false;
-            m_ControlIntensity = 0f;
-
-            if (m_DebugMode)
-            {
-                Debug.Log("Control returned to player.");
-            }
-        }
-
-        private void ApplyControlTakeover()
-        {
-            if (m_XROrigin == null) return;
-
-            // Apply forced movement
-            Vector3 movement = m_ForcedMovementDirection * m_ControlIntensity * Time.deltaTime * 0.5f;
-            m_XROrigin.position += movement;
-
-            // Apply forced rotation
-            float rotation = m_ForcedRotation * m_ControlIntensity * Time.deltaTime;
-            m_XROrigin.Rotate(0, rotation, 0);
-
-            // In full takeover phase, also mess with hand positions occasionally
-            if (m_TakeoverProgress >= PHASE_3_END)
-            {
-                ApplyHandGlitch();
-            }
-        }
-
-        private void ApplyHandGlitch()
-        {
-            // Random chance to offset controller visuals
-            if (Random.value < 0.02f * m_TakeoverProgress)
-            {
-                if (m_LeftController != null)
+                // Only start feeling it after 30%
+                if (m_TakeoverProgress > 0.3f)
                 {
-                    StartCoroutine(TemporaryHandOffset(m_LeftController));
+                    float intensity = Mathf.Lerp(0f, 0.5f, m_TakeoverProgress);
+
+                    // Lub
+                    HapticPulse(intensity * 0.7f, 0.05f);
+                    if (m_HeartbeatSound != null && m_AudioSource != null) m_AudioSource.PlayOneShot(m_HeartbeatSound, intensity * 0.5f);
+
+                    yield return new WaitForSeconds(0.1f);
+
+                    // Dub
+                    HapticPulse(intensity, 0.05f);
                 }
-                if (m_RightController != null && Random.value < 0.5f)
-                {
-                    StartCoroutine(TemporaryHandOffset(m_RightController));
-                }
+
+                yield return new WaitForSeconds(beatInterval - 0.1f);
             }
         }
 
-        private IEnumerator TemporaryHandOffset(Transform hand)
+        private void HapticPulse(float amplitude, float duration)
         {
-            Vector3 originalLocalPos = hand.localPosition;
-            Quaternion originalLocalRot = hand.localRotation;
-
-            float duration = Random.Range(0.1f, 0.3f);
-            float elapsed = 0f;
-
-            Vector3 offset = new Vector3(
-                Random.Range(-0.1f, 0.1f),
-                Random.Range(-0.1f, 0.1f),
-                Random.Range(-0.1f, 0.1f)
-            );
-
-            while (elapsed < duration)
+            if (m_LeftController != null)
             {
-                float t = elapsed / duration;
-                hand.localPosition = Vector3.Lerp(originalLocalPos, originalLocalPos + offset,
-                    Mathf.Sin(t * Mathf.PI));
-
-                elapsed += Time.deltaTime;
-                yield return null;
+                var inputDevice = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.LeftHand);
+                inputDevice.SendHapticImpulse(0, amplitude, duration);
             }
-
-            hand.localPosition = originalLocalPos;
-            hand.localRotation = originalLocalRot;
+            if (m_RightController != null)
+            {
+                var inputDevice = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightHand);
+                inputDevice.SendHapticImpulse(0, amplitude, duration);
+            }
         }
 
-        #endregion
-
-        #region Private Methods - Restoration
-
-        private void RestoreAllObjects()
+        /// <summary>
+        /// Triggers total chaos on ALL objects.
+        /// Mix of permanent takeover and flashing effects.
+        /// </summary>
+        private void TriggerTotalChaos()
         {
-            foreach (var obj in m_AffectedObjects)
+            // 1. Film Objects
+            foreach (var obj in m_PropagandaFilmObjects)
             {
                 if (obj == null) continue;
 
-                // Restore position, rotation, scale
-                if (m_OriginalPositions.ContainsKey(obj))
-                    obj.transform.position = m_OriginalPositions[obj];
+                Material randomFilm = null;
+                if (m_PropagandaFilmMaterials.Count > 0)
+                    randomFilm = m_PropagandaFilmMaterials[Random.Range(0, m_PropagandaFilmMaterials.Count)];
 
-                if (m_OriginalRotations.ContainsKey(obj))
-                    obj.transform.rotation = m_OriginalRotations[obj];
-
-                if (m_OriginalScales.ContainsKey(obj))
-                    obj.transform.localScale = m_OriginalScales[obj];
-
-                // Restore materials
-                if (m_OriginalMaterials.ContainsKey(obj))
+                if (randomFilm != null)
                 {
-                    var renderer = obj.GetComponent<Renderer>();
-                    if (renderer != null)
-                    {
-                        renderer.materials = m_OriginalMaterials[obj];
-                    }
+                    // 50% Permanent, 50% Flashing
+                    if (Random.value > 0.5f)
+                        StartCoroutine(ApplyReplacingMaterial(obj, randomFilm, 999f, "TVframes")); // Permanent
+                    else
+                        StartCoroutine(FlashMaterialRoutine(obj, randomFilm, "TVframes")); // Flashing
                 }
-
-                // Re-enable if disappeared
-                obj.SetActive(true);
             }
 
-            m_DisappearedObjects.Clear();
+            // 2. Static Objects
+            foreach (var obj in m_PropagandaStaticObjects)
+            {
+                if (obj == null) continue;
+                Material randomMat = null;
+                if (m_PropagandaStaticMaterials.Count > 0)
+                    randomMat = m_PropagandaStaticMaterials[Random.Range(0, m_PropagandaStaticMaterials.Count)];
+
+                if (randomMat != null)
+                {
+                    if (Random.value > 0.5f)
+                        StartCoroutine(ApplyReplacingMaterial(obj, randomMat, 999f, "posters"));
+                    else
+                        StartCoroutine(FlashMaterialRoutine(obj, randomMat, "posters"));
+                }
+            }
+        }
+
+        private IEnumerator FlashMaterialRoutine(GameObject obj, Material glitchMat, string filter)
+        {
+            // Rapidly swap between original and glitch
+            // This loop runs until the object is destroyed or the script stops
+            while (obj != null)
+            {
+                // Glitch ON
+                yield return StartCoroutine(ApplyReplacingMaterial(obj, glitchMat, Random.Range(0.05f, 0.15f), filter));
+                // Wait small random time before next glitch
+                yield return new WaitForSeconds(Random.Range(0.05f, 0.2f));
+            }
+        }
+
+        #endregion
+
+        #region Private Methods - Screen Glitch Logic
+
+        private void UpdateGlitchController()
+        {
+            if (m_GlitchController == null) return;
+
+            // Decrement glitch burst timer
+            if (m_GlitchBurstTimer > 0f)
+            {
+                m_GlitchBurstTimer -= Time.deltaTime;
+            }
+
+            float baseNoiseAmount = 0f;
+            float baseGlitchStrength = 0f;
+            float baseScanLineStrength = 0f;
+
+            // VISUALS ONLY START AT 70%
+            if (m_TakeoverProgress >= PHASE_VISUAL_START)
+            {
+                // Re-map progress from 70-100% to 0-1 range for intensity calculation
+                float glitchPhaseProgress = Mathf.InverseLerp(PHASE_VISUAL_START, 1.0f, m_TakeoverProgress);
+
+                // Explosive chaos ONLY near the very end (95%+)
+                // Before that, keep it subtle
+
+                if (m_TakeoverProgress > 0.95f)
+                {
+                    // 95-100%: HIGH INTENSITY RAMP
+                    float chaosProgress = Mathf.InverseLerp(0.95f, 1.0f, m_TakeoverProgress);
+                    baseNoiseAmount = Mathf.Lerp(0.1f, 0.4f, chaosProgress);
+                    baseScanLineStrength = Mathf.Lerp(0.2f, 0.8f, chaosProgress);
+                    baseGlitchStrength = Mathf.Lerp(0.05f, 0.3f, chaosProgress);
+                }
+                else
+                {
+                    // 70-95%: SUBTLE / INTERFERENCE
+                    baseNoiseAmount = Mathf.Lerp(0.02f, 0.08f, glitchPhaseProgress); // Very light noise
+                    baseScanLineStrength = Mathf.Lerp(0.05f, 0.15f, glitchPhaseProgress); // Light scanlines
+                    baseGlitchStrength = Mathf.Lerp(0.0f, 0.02f, glitchPhaseProgress); // Barely any distortion
+                }
+            }
+
+            // Apply BURST (Explosive effect)
+            float burstMultiplier = 1f;
+            if (m_GlitchBurstTimer > 0f)
+            {
+                burstMultiplier = 2.5f; // Strong burst
+            }
+
+            // Calculate targets
+            m_TargetNoiseAmount = Mathf.Clamp01(baseNoiseAmount * burstMultiplier);
+            m_TargetScanLineStrength = Mathf.Clamp01(baseScanLineStrength * burstMultiplier);
+            m_TargetGlitchStrength = Mathf.Clamp(baseGlitchStrength * burstMultiplier, 0f, 0.3f); // Hard cap for comfort
+
+            // Interpolate
+            m_GlitchController.LerpTowards(
+                m_TargetNoiseAmount,
+                m_TargetGlitchStrength,
+                m_TargetScanLineStrength,
+                m_GlitchLerpSpeed
+            );
+        }
+
+        public void TriggerGlitchBurst(float duration = 0.3f)
+        {
+            if (m_GlitchController == null) return;
+            // Only allow bursts if we are past the 70% mark, OR if it's the very end
+            if (m_TakeoverProgress < PHASE_VISUAL_START && m_TakeoverProgress < 0.99f) return;
+
+            m_GlitchBurstTimer = duration;
+            m_GlitchLerpSpeed = 10f; // Snappy attack
+            StartCoroutine(ResetGlitchLerpSpeed(duration));
+        }
+
+        private IEnumerator ResetGlitchLerpSpeed(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            m_GlitchLerpSpeed = 2f; // Smooth release
+        }
+
+        #endregion
+
+        #region Private Methods - Crash
+
+        private void ExecuteFakeCrash()
+        {
+            if (m_DebugMode) Debug.Log("CRITICAL ERROR: AI TAKEOVER COMPLETE. EXECUTING FAKE CRASH.");
+
+            if (m_GlitchController != null)
+            {
+                m_GlitchController.SetGlitchValues(1.0f, 0.2f, 1.0f); // Maximize noise/scanlines
+            }
+
+            // STOP ALL OTHER AUDIO
+            AudioSource[] allAudio = FindObjectsOfType<AudioSource>();
+            foreach (var audio in allAudio)
+            {
+                if (audio != m_AudioSource)
+                {
+                    audio.Stop();
+                    audio.enabled = false;
+                }
+            }
+
+            // LOOP CRASH SOUND
+            if (m_AudioSource != null && m_CrashSound != null)
+            {
+                m_AudioSource.Stop();
+                m_AudioSource.clip = m_CrashSound;
+                m_AudioSource.loop = true;
+                m_AudioSource.Play();
+            }
+
+            // Hide Controllers
+            if (m_LeftController != null) m_LeftController.gameObject.SetActive(false);
+            if (m_RightController != null) m_RightController.gameObject.SetActive(false);
+
+            // Show UI
+            if (m_CrashUI != null && m_PlayerCamera != null)
+            {
+                // ROBUST CRASH UI - ATTEMPT 3
+                // 1. Create a dedicated container
+                GameObject crashRoot = new GameObject("OverseerCrashRoot");
+
+                // 2. Parent it to the camera (Head-Locked)
+                crashRoot.transform.SetParent(m_PlayerCamera.transform);
+                crashRoot.transform.localPosition = new Vector3(0f, 0f, 0.4f); // 0.4m in front (closer for better coverage)
+                crashRoot.transform.localRotation = Quaternion.identity;
+                crashRoot.transform.localScale = Vector3.one;
+
+                // 3. Make the user's UI a child of this root
+                m_CrashUI.SetActive(true);
+                m_CrashUI.transform.SetParent(crashRoot.transform, false);
+
+                // 4. Force Canvas settings if it is a canvas
+                Canvas c = m_CrashUI.GetComponent<Canvas>();
+                if (c == null) c = m_CrashUI.GetComponentInParent<Canvas>();
+
+                if (c != null)
+                {
+                    c.renderMode = RenderMode.WorldSpace;
+                    c.sortingOrder = 32767;
+
+                    // Reset transform to be centered
+                    c.transform.localPosition = Vector3.zero;
+                    c.transform.localRotation = Quaternion.identity;
+                    c.transform.localScale = Vector3.one * 0.001f; // Standard UI Scale
+
+                    // FORCE FULL SCREEN SIZE
+                    // At 0.4m distance, a 2m x 2m canvas covers >135 degrees FOV.
+                    // Scale 0.001 -> 2000 units = 2 meters.
+                    RectTransform rt = c.GetComponent<RectTransform>();
+                    if (rt != null)
+                    {
+                        rt.sizeDelta = new Vector2(2500f, 2000f); // Wide & Tall enough to cover everything
+                    }
+                }
+                else
+                {
+                    // If no canvas (just a quad/object), reset its transform
+                    m_CrashUI.transform.localPosition = Vector3.zero;
+                    m_CrashUI.transform.localRotation = Quaternion.identity;
+                    // If it's a quad, 2.5 scale might be needed
+                    m_CrashUI.transform.localScale = Vector3.one * 2.5f;
+                }
+            }
+
+            // Freeze game to simulate crash
+            Time.timeScale = 0f;
+            m_IsActive = false;
+        }
+
+        private void OnGUI()
+        {
+            if (!m_DebugMode) return;
+
+            GUILayout.BeginArea(new Rect(10, 10, 300, 150), GUI.skin.box);
+            GUILayout.Label($"Overseer Progress: {(m_TakeoverProgress * 100):F1}%");
+
+            string phase = "Dormant/Subtle";
+            if (m_TakeoverProgress > PHASE_VISUAL_START) phase = "VISUAL GLITCHES";
+            if (m_TakeoverProgress > 0.9f) phase = "CRITICAL / CHAOS";
+
+            GUILayout.Label($"Phase: {phase}");
+            GUILayout.Label($"Next Glitch In: {(m_NextGlitchTime - m_ElapsedTime):F1}s");
+            GUILayout.EndArea();
+        }
+
+        private void PlaySound(AudioClip clip)
+        {
+            if (clip != null && m_AudioSource != null)
+                m_AudioSource.PlayOneShot(clip);
         }
 
         #endregion

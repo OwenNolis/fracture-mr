@@ -4,103 +4,104 @@ using UnityEngine.Rendering;
 namespace Unity.VRTemplate
 {
     /// <summary>
-    /// Screen-space glitch effects that can be controlled by the OverseerSystem.
-    /// Attach this to the main camera or a post-processing volume.
+    /// Screen-space glitch effects using the Glitch.shadergraph material.
+    /// Works with GlitchController and OverseerGlitchFeature for URP post-processing.
+    /// Attach this to any GameObject in the scene.
     /// </summary>
     public class OverseerGlitchEffect : MonoBehaviour
     {
+        [Header("Material Reference")]
+        [SerializeField]
+        [Tooltip("The Glitch material (using Glitch.shadergraph). If not assigned, will try to find GlitchController's material.")]
+        private Material m_GlitchMaterial;
+
         [Header("Overseer Reference")]
         [SerializeField]
+        [Tooltip("Reference to OverseerSystem. If not assigned, will auto-find.")]
         private OverseerSystem m_OverseerSystem;
 
-        [Header("Chromatic Aberration")]
+        [Header("Glitch Controller Reference")]
         [SerializeField]
-        [Tooltip("Enable chromatic aberration effect.")]
-        private bool m_EnableChromaticAberration = true;
+        [Tooltip("Reference to GlitchController. If not assigned, will auto-find.")]
+        private GlitchController m_GlitchController;
+
+        [Header("Glitch Burst Settings")]
+        [SerializeField]
+        [Tooltip("Enable automatic glitch bursts based on Overseer progress.")]
+        private bool m_EnableAutoBursts = true;
 
         [SerializeField]
-        [Tooltip("Maximum chromatic aberration intensity.")]
-        [Range(0f, 1f)]
-        private float m_MaxChromaticIntensity = 0.5f;
-
-        [Header("Screen Distortion")]
-        [SerializeField]
-        [Tooltip("Enable screen distortion.")]
-        private bool m_EnableDistortion = true;
+        [Tooltip("Minimum time between automatic glitch bursts.")]
+        private float m_MinBurstInterval = 5f;
 
         [SerializeField]
-        [Tooltip("Maximum distortion amount.")]
-        [Range(0f, 0.1f)]
-        private float m_MaxDistortion = 0.02f;
-
-        [Header("Scanlines")]
-        [SerializeField]
-        [Tooltip("Enable scanline effect.")]
-        private bool m_EnableScanlines = true;
-
-        [SerializeField]
-        [Tooltip("Scanline density.")]
-        [Range(100f, 1000f)]
-        private float m_ScanlineDensity = 300f;
-
-        [Header("Flicker")]
-        [SerializeField]
-        [Tooltip("Enable screen flicker.")]
-        private bool m_EnableFlicker = true;
-
-        [SerializeField]
-        [Tooltip("Maximum flicker intensity.")]
-        [Range(0f, 0.5f)]
-        private float m_MaxFlickerIntensity = 0.2f;
-
-        [Header("Color Shift")]
-        [SerializeField]
-        [Tooltip("Enable color shift/corruption.")]
-        private bool m_EnableColorShift = true;
-
-        [SerializeField]
-        [Tooltip("Color to shift towards during glitches.")]
-        private Color m_GlitchColor = new Color(1f, 0f, 0f, 0.1f);
-
-        [Header("Static Noise")]
-        [SerializeField]
-        [Tooltip("Enable static noise overlay.")]
-        private bool m_EnableNoise = true;
-
-        [SerializeField]
-        [Tooltip("Maximum noise intensity.")]
-        [Range(0f, 1f)]
-        private float m_MaxNoiseIntensity = 0.3f;
+        [Tooltip("Maximum time between automatic glitch bursts.")]
+        private float m_MaxBurstInterval = 20f;
 
         // Internal state
         private float m_CurrentIntensity = 0f;
-        private Material m_GlitchMaterial;
         private bool m_IsGlitching = false;
         private float m_GlitchTimer = 0f;
         private float m_NextGlitchTime = 0f;
 
-        // Shader property IDs
-        private static readonly int ChromaticIntensity = Shader.PropertyToID("_ChromaticIntensity");
-        private static readonly int DistortionAmount = Shader.PropertyToID("_DistortionAmount");
-        private static readonly int ScanlineIntensity = Shader.PropertyToID("_ScanlineIntensity");
-        private static readonly int FlickerIntensity = Shader.PropertyToID("_FlickerIntensity");
-        private static readonly int NoiseIntensity = Shader.PropertyToID("_NoiseIntensity");
-        private static readonly int GlitchColorProperty = Shader.PropertyToID("_GlitchColor");
-        private static readonly int TimeProperty = Shader.PropertyToID("_Time");
+        // Singleton for OverseerGlitchFeature access
+        public static OverseerGlitchEffect Instance { get; private set; }
+        
+        /// <summary>
+        /// The glitch material used for post-processing blit.
+        /// </summary>
+        public Material GlitchMaterial => m_GlitchMaterial;
 
         private void Awake()
         {
+            Instance = this;
+            FindReferences();
+        }
+
+        private void Start()
+        {
+            ValidateSetup();
+        }
+
+        private void FindReferences()
+        {
+            // Find OverseerSystem
             if (m_OverseerSystem == null)
             {
                 m_OverseerSystem = FindFirstObjectByType<OverseerSystem>();
             }
 
-            // Create glitch material if shader exists
-            Shader glitchShader = Shader.Find("Hidden/OverseerGlitch");
-            if (glitchShader != null)
+            // Find GlitchController
+            if (m_GlitchController == null)
             {
-                m_GlitchMaterial = new Material(glitchShader);
+                m_GlitchController = FindFirstObjectByType<GlitchController>();
             }
+
+            // Get material from GlitchController if not assigned
+            if (m_GlitchMaterial == null && m_GlitchController != null)
+            {
+                m_GlitchMaterial = m_GlitchController.material;
+            }
+        }
+
+        private void ValidateSetup()
+        {
+            if (m_GlitchMaterial == null)
+            {
+                Debug.LogError("[OverseerGlitchEffect] No Glitch material found! Assign the Glitch.mat or ensure GlitchController has a material assigned.");
+            }
+            else
+            {
+                Debug.Log("[OverseerGlitchEffect] Glitch material found: " + m_GlitchMaterial.name);
+            }
+
+            if (m_GlitchController == null)
+            {
+                Debug.LogWarning("[OverseerGlitchEffect] No GlitchController found. Shader parameters won't be automatically controlled.");
+            }
+
+            // Remind about URP Feature
+            Debug.Log("[OverseerGlitchEffect] TIP: Ensure 'Overseer Glitch Feature' is added to your URP Renderer Data for screen-space effects.");
         }
 
         private void Update()
@@ -110,12 +111,10 @@ namespace Unity.VRTemplate
             float progress = m_OverseerSystem.GetProgress();
             m_CurrentIntensity = progress;
 
-            // Trigger random glitch bursts
-            if (Time.time >= m_NextGlitchTime && progress > 0.1f)
+            // Handle automatic glitch bursts
+            if (m_EnableAutoBursts && progress > 0.1f)
             {
-                TriggerGlitchBurst();
-                // More frequent glitches as progress increases
-                m_NextGlitchTime = Time.time + Random.Range(5f, 20f) * (1f - progress * 0.7f);
+                HandleAutoBursts(progress);
             }
 
             // Update glitch timer
@@ -129,10 +128,28 @@ namespace Unity.VRTemplate
             }
         }
 
+        private void HandleAutoBursts(float progress)
+        {
+            if (Time.time >= m_NextGlitchTime)
+            {
+                TriggerGlitchBurst();
+                
+                // More frequent glitches as progress increases
+                float intervalMultiplier = 1f - (progress * 0.7f);
+                m_NextGlitchTime = Time.time + Random.Range(m_MinBurstInterval, m_MaxBurstInterval) * intervalMultiplier;
+            }
+        }
+
         private void TriggerGlitchBurst()
         {
             m_IsGlitching = true;
             m_GlitchTimer = Random.Range(0.1f, 0.5f) * m_CurrentIntensity;
+
+            // Also trigger burst on OverseerSystem's GlitchController
+            if (m_OverseerSystem != null)
+            {
+                m_OverseerSystem.TriggerGlitchBurst(m_GlitchTimer);
+            }
         }
 
         /// <summary>
@@ -142,73 +159,28 @@ namespace Unity.VRTemplate
         {
             m_IsGlitching = true;
             m_GlitchTimer = duration;
+
+            if (m_OverseerSystem != null)
+            {
+                m_OverseerSystem.TriggerGlitchBurst(duration);
+            }
         }
 
-        private void OnRenderImage(RenderTexture source, RenderTexture destination)
-        {
-            if (m_GlitchMaterial == null || m_CurrentIntensity <= 0)
-            {
-                Graphics.Blit(source, destination);
-                return;
-            }
+        /// <summary>
+        /// Check if currently in a glitch burst.
+        /// </summary>
+        public bool IsGlitching => m_IsGlitching;
 
-            // Calculate effect multiplier (higher during glitch bursts)
-            float effectMultiplier = m_IsGlitching ? 
-                Mathf.Lerp(1f, 3f, m_CurrentIntensity) : 
-                m_CurrentIntensity;
-
-            // Set shader properties
-            if (m_EnableChromaticAberration)
-            {
-                m_GlitchMaterial.SetFloat(ChromaticIntensity, 
-                    m_MaxChromaticIntensity * effectMultiplier * (m_IsGlitching ? Random.Range(0.5f, 1.5f) : 1f));
-            }
-
-            if (m_EnableDistortion)
-            {
-                m_GlitchMaterial.SetFloat(DistortionAmount, 
-                    m_MaxDistortion * effectMultiplier);
-            }
-
-            if (m_EnableScanlines)
-            {
-                m_GlitchMaterial.SetFloat(ScanlineIntensity, 
-                    m_CurrentIntensity * 0.5f);
-            }
-
-            if (m_EnableFlicker && m_IsGlitching)
-            {
-                m_GlitchMaterial.SetFloat(FlickerIntensity, 
-                    m_MaxFlickerIntensity * Random.Range(0f, 1f));
-            }
-            else
-            {
-                m_GlitchMaterial.SetFloat(FlickerIntensity, 0f);
-            }
-
-            if (m_EnableNoise)
-            {
-                m_GlitchMaterial.SetFloat(NoiseIntensity, 
-                    m_MaxNoiseIntensity * effectMultiplier * (m_IsGlitching ? 1f : 0.3f));
-            }
-
-            if (m_EnableColorShift)
-            {
-                Color shiftedColor = m_GlitchColor;
-                shiftedColor.a *= effectMultiplier;
-                m_GlitchMaterial.SetColor(GlitchColorProperty, shiftedColor);
-            }
-
-            m_GlitchMaterial.SetFloat(TimeProperty, Time.time);
-
-            Graphics.Blit(source, destination, m_GlitchMaterial);
-        }
+        /// <summary>
+        /// Current intensity based on Overseer progress.
+        /// </summary>
+        public float CurrentIntensity => m_CurrentIntensity;
 
         private void OnDestroy()
         {
-            if (m_GlitchMaterial != null)
+            if (Instance == this)
             {
-                Destroy(m_GlitchMaterial);
+                Instance = null;
             }
         }
     }
