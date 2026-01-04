@@ -90,5 +90,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Unity.VRTemplate.OverseerGlitchFeature
   m_Active: 1
   settings:
-    renderPassEvent: 1000
+    renderPassEvent: 550
     fallbackMaterial: {fileID: 2100000, guid: 4272c9d63faf6074d8a1b66f8ed61e8a, type: 2}
