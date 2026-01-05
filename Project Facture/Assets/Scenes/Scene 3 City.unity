@@ -4613,23 +4613,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4996331609727074547, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5128025884682617589, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5128025884682617589, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5128025884682617589, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 5128025884682617589, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -720
       objectReference: {fileID: 0}
     - target: {fileID: 5158213935577336287, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       propertyPath: m_StepOffset
@@ -4677,7 +4677,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6983650710150680411, guid: ccf12014b48c1514581abfe38dcc17c8, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -42574,7 +42574,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unity.VRTemplate.OverseerSystem
   m_AutoStart: 0
-  m_TakeoverDuration: 240
+  m_TakeoverDuration: 200
   m_AffectedObjects: []
   m_AutoFindAffectedObjects: 1
   m_AffectedObjectTag: AffectedByOverseer
@@ -45062,7 +45062,8 @@ PrefabInstance:
       value: Newspaper AI
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 65702495048144492, guid: d16f69c34ea024318a907ecc9846d844, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: d16f69c34ea024318a907ecc9846d844, type: 3}
       insertIndex: -1
@@ -64436,7 +64437,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0

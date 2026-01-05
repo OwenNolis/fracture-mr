@@ -4,8 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Scene 3 City.unity
+    guid: 83e24d7fef2f3491da15311f924046d6
   m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 78edfb875e6a1e143bcffab722296d43, type: 2}
     UnityEditor.XR.VisionOS.VisionOSSettings: {fileID: 11400000, guid: 65232e61cf25547f2b20ce7f9ea8ae55, type: 2}
     com.unity.polyspatial.xr.xr_settings: {fileID: 11400000, guid: 61d00c3c63f8a4688bc72df04c1b00e9, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 746baacae541e49ea8e76667303e97a2, type: 2}
