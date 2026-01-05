@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-[RequireComponent(typeof(UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable))]
+[RequireComponent(typeof(UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable))]
 [RequireComponent(typeof(Rigidbody))]
 public class XRDoorHinge : MonoBehaviour
 {
@@ -11,94 +11,76 @@ public class XRDoorHinge : MonoBehaviour
     [Header("Angles")]
     public float closedAngle = 0f;
     public float openAngle = 90f;
-    public float minAngle = 0f;
-    public float maxAngle = 100f;
 
-    [Header("Snap")]
-    public float snapSpeed = 8f;
-    public float snapThreshold = 10f;
-
-    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grab;
+    [Header("Animation")]
+    public float animationSpeed = 2f; // Speed of opening/closing
+    
+    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable interactable;
     private Rigidbody rb;
 
     private Quaternion baseLocalRotation;
-    private bool isSnapping;
-    private float targetAngle;
+    private Vector3 baseLocalPosition;
+    private Vector3 baseLocalScale;
+
+    private bool isOpen = false;
+    private float currentAngle;
 
     void Awake()
     {
-        grab = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+        interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
         rb = GetComponent<Rigidbody>();
 
-        // Door should not be thrown around by physics
+        // Kinematic setup to prevent physics issues
         rb.isKinematic = true;
         rb.useGravity = false;
 
         baseLocalRotation = transform.localRotation;
+        baseLocalPosition = transform.localPosition;
+        baseLocalScale = transform.localScale;
+
+        // Initialize current angle logic
+        currentAngle = closedAngle; 
     }
 
     void OnEnable()
     {
-        if (grab != null)
-            grab.selectExited.AddListener(OnSelectExited);
+        if (interactable != null)
+        {
+            interactable.selectEntered.AddListener(OnSelectEntered);
+        }
     }
 
     void OnDisable()
     {
-        if (grab != null)
-            grab.selectExited.RemoveListener(OnSelectExited);
+        if (interactable != null)
+        {
+            interactable.selectEntered.RemoveListener(OnSelectEntered);
+        }
     }
 
-    private void OnSelectExited(SelectExitEventArgs args)
+    private void OnSelectEntered(SelectEnterEventArgs args)
     {
-        StartSnap();
+        ToggleDoor();
+    }
+
+    public void ToggleDoor()
+    {
+        isOpen = !isOpen;
     }
 
     void Update()
     {
-        if (grab == null) return;
+        // 1. Enforce Locking to prevent drift/skew
+        transform.localPosition = baseLocalPosition;
+        transform.localScale = baseLocalScale;
 
-        if (grab.isSelected)
-        {
-            float angle = Mathf.Clamp(GetSignedAngle(), minAngle, maxAngle);
-            SetAngle(angle);
-            isSnapping = false;
-        }
-        else if (isSnapping)
-        {
-            float angle = GetSignedAngle();
-            float next = Mathf.LerpAngle(angle, targetAngle, Time.deltaTime * snapSpeed);
-            SetAngle(next);
+        // 2. Animate Door
+        float target = isOpen ? openAngle : closedAngle;
 
-            if (Mathf.Abs(Mathf.DeltaAngle(next, targetAngle)) < 0.5f)
-            {
-                SetAngle(targetAngle);
-                isSnapping = false;
-            }
-        }
-    }
-
-    void StartSnap()
-    {
-        float angle = GetSignedAngle();
-
-        float distToClosed = Mathf.Abs(Mathf.DeltaAngle(angle, closedAngle));
-        float distToOpen = Mathf.Abs(Mathf.DeltaAngle(angle, openAngle));
-
-        if (distToClosed < snapThreshold) { targetAngle = closedAngle; isSnapping = true; }
-        else if (distToOpen < snapThreshold) { targetAngle = openAngle; isSnapping = true; }
-    }
-
-    float GetSignedAngle()
-    {
-        Quaternion rel = Quaternion.Inverse(baseLocalRotation) * transform.localRotation;
-        rel.ToAngleAxis(out float angle, out Vector3 axis);
-
-        angle = Mathf.DeltaAngle(0f, angle);
-
-        Vector3 hingeAxis = localHingeAxis.sqrMagnitude > 0.0001f ? localHingeAxis.normalized : Vector3.up;
-        float sign = Mathf.Sign(Vector3.Dot(axis, hingeAxis));
-        return angle * sign;
+        // Smoothly move current angle towards target
+        currentAngle = Mathf.MoveTowards(currentAngle, target, Time.deltaTime * animationSpeed * 10f); // *10 scaling for easier inspector values
+        
+        SetAngle(currentAngle);
     }
 
     void SetAngle(float angle)
